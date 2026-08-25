@@ -1,12 +1,22 @@
+<div align="center">
+
+<img src="icons/logo.svg" alt="Cleanup Gmail logo" width="112" height="112">
+
 # Cleanup Gmail — Minimal UI
 
-A Chrome extension that strips Gmail down to a clean, focused interface — then hands you the controls.
+**A Chrome extension that strips Gmail down to a clean, focused interface — then hands you the controls.**
+
+<a href="https://buymeacoffee.com/tekniq"><img src="https://img.shields.io/badge/Buy%20me%20a%20coffee-☕-FFDD00?style=for-the-badge" alt="Buy me a coffee"></a>
+<img src="https://img.shields.io/badge/Manifest-V3-111111?style=for-the-badge" alt="Manifest V3">
+<img src="https://img.shields.io/badge/License-MIT-111111?style=for-the-badge" alt="MIT License">
+
+</div>
+
+---
 
 Hide the clutter, float each message as a card, put the reply bar at the top, reverse threads so the newest message leads, and set your own accent color, fonts, density, and spacing. **33 toggles, 51 settings**, all live-updating with no page reload.
 
 Works in Chrome, Edge, Brave, Arc, Opera, Vivaldi — anything Chromium.
-
-<a href="https://buymeacoffee.com/tekniq"><img src="https://img.shields.io/badge/Buy%20me%20a%20coffee-☕-FFDD00?style=for-the-badge" alt="Buy me a coffee"></a>
 
 ---
 
@@ -155,7 +165,19 @@ defaults.js      settings schema — shared by content script and popup
 content.js       applies settings, tags Gmail's DOM, injects quick filters + date headers
 gmail.css        all visual rules, each gated behind a gs-* class
 popup.html/css/js  the control panel
-icons/           16 / 32 / 48 / 128 px
+icons/           logo.svg (master) + logo-16.svg (pixel-tuned) → icon16/32/48/128.png
+```
+
+**Regenerating the icons:** `logo.svg` is the source of truth for 32 / 48 / 128; `logo-16.svg` is a separate pixel-grid-tuned variant that must be rendered natively at 16×16 — downsampling the master to that size turns the bars to mush.
+
+```bash
+python3 -c "
+import cairosvg; from PIL import Image
+cairosvg.svg2png(url='icons/logo.svg', write_to='/tmp/m.png', output_width=1024, output_height=1024)
+m = Image.open('/tmp/m.png').convert('RGBA')
+[m.resize((s,s), Image.LANCZOS).save(f'icons/icon{s}.png') for s in (128,48,32)]
+cairosvg.svg2png(url='icons/logo-16.svg', write_to='icons/icon16.png', output_width=16, output_height=16)
+"
 ```
 
 **Adding a feature:** append an entry to `GS_TOGGLES` in `defaults.js`, then write `html.gs-<your-key> { … }` in `gmail.css`. The popup builds its own UI from that list — no popup code to touch.
@@ -179,7 +201,7 @@ If this made your inbox nicer to look at, you can buy me a coffee:
 
 **[buymeacoffee.com/tekniq](https://buymeacoffee.com/tekniq)**
 
-Bug reports and pull requests welcome via [Issues](https://github.com/tekniq/Cleanup-Gmail/issues). For visual bugs, a screenshot plus the output of right-click → Inspect on the offending element saves a lot of guessing.
+Bug reports and pull requests welcome via [Issues](https://github.com/HaxNet/Cleanup-Gmail/issues). For visual bugs, a screenshot plus the output of right-click → Inspect on the offending element saves a lot of guessing.
 
 ---
 

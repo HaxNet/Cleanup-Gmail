@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-label="Cleanup Gmail">
+  <title>Cleanup Gmail</title>
+  <!-- Master mark: black squircle, three left-aligned bars stepping down in
+       width and weight — a message list being decluttered.
+       Palette matches the extension default accent (#111111 on white). -->
+  <rect x="0" y="0" width="128" height="128" rx="29" ry="29" fill="#111111"/>
+  <!-- Hairline rim: invisible on light backgrounds, defines the silhouette
+       against Chrome's dark toolbar so the mark never dissolves. -->
+  <rect x="1.25" y="1.25" width="125.5" height="125.5" rx="27.75" ry="27.75"
+        fill="none" stroke="#ffffff" stroke-opacity="0.26" stroke-width="2.5"/>
+
+  <g fill="#ffffff">
+    <rect x="29" y="34"   width="70" height="15" rx="7.5" ry="7.5"/>
+    <rect x="29" y="61.5" width="51" height="15" rx="7.5" ry="7.5" fill-opacity="0.88"/>
+    <rect x="29" y="89"   width="32" height="15" rx="7.5" ry="7.5" fill-opacity="0.55"/>
+  </g>
+</svg>
