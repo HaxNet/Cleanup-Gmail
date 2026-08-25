@@ -489,34 +489,59 @@ html.gs-card-pane div.gA.gt .aoI {
   box-sizing: border-box !important;
 }
 
-/* ---- Card-style compose window -----------------------------------
-   div.nH.Hd is Gmail's own pop-out compose wrapper. Rounding and
-   shadowing it frames the New Message window as a card. Add-on bars
-   (Boomerang's Send Later row, measured L166 R1480 against a compose
-   at L150 R1496) render inside this wrapper, so they are framed too
-   with no per-add-on rule.
+/* ---- Send / formatting toolbar inside the compose box ------------
+   Restores the v1.2.2 look: the footer (.aDh) carries the compose
+   surface colour and a rounded base, so the Send button and the
+   formatting icons read as part of the box rather than loose beneath it.
 
-   TOP CORNERS ONLY, and no clipping — both learned the hard way.
-   Gmail's compose footer overflows its own dialog: div.nH.Hd ends at
-   1164 while the toolbar (div.aDh / table.IZ) runs to 1228, 64px
-   lower. Rounding all four corners drew the card's edge ABOVE the Send
-   row and left the toolbar stranded on the page background. And
-   overflow:hidden did not clip it, because the footer escapes the
-   clip — it only added a hard rounded edge mid-window.
+   Colour and radius ONLY — deliberately no vertical padding. v1.2.2
+   applied `padding: 10px 26px`, which made .aDh 20px taller (116 -> 136),
+   overflowed div.aoI (overflow-y:auto), raised a scrollbar and pulled
+   every row 15px narrower. That was the To/From misalignment. Without
+   the vertical padding the height is unchanged, so the look comes back
+   and the bug does not.                                              */
 
-   Rounding just the top frames the window without cutting anything
-   off, with or without an add-on bar. */
-
-html.gs-card-compose div.nH.Hd {
-  border-radius: var(--gs-card-radius, 16px) var(--gs-card-radius, 16px) 0 0 !important;
-  box-shadow:
-    0 var(--gs-sh-y1) var(--gs-sh-b1) rgba(0, 0, 0, var(--gs-sh-a1)),
-    0 var(--gs-sh-y2) var(--gs-sh-b2) rgba(0, 0, 0, var(--gs-sh-a2)) !important;
+/* Let the footer FLOW inside its holder instead of being pinned.
+   Gmail renders div.aDj.ahe (the wrapper around .aDh) as
+   position:fixed with a hardcoded pixel top computed by its JS — and
+   that number lands ~93px below where the holder div.aDg reserves
+   space, which is why the toolbar sat too low inside it. Static
+   positioning drops the footer to the holder's top: verified live,
+   offset 0px, no spill past the holder bottom. */
+html.gs-card-pane div.nH.Hd .aDg .aDj {
+  position: static !important;
+  top: auto !important;
+  height: auto !important;
 }
 
-/* the minimised compose strip keeps its own small radius */
-html.gs-card-compose div.nH.Hd.aXJ {
-  border-radius: var(--gs-radius, 12px) var(--gs-radius, 12px) 0 0 !important;
+/* FULL WIDTH, not centred. Measured in the full-screen compose:
+   the header rows (.fX — From/To/Subject) span the window at L166
+   while a centred footer sat at L310, a 144px disagreement that read
+   as the toolbar being misaligned whenever the eye compared it to the
+   recipient rows. The v1.2.2 centring belongs to the thread reply
+   card; in the compose the footer must line up with the header. */
+html.gs-card-pane div.nH.Hd .aDh {
+  max-width: none !important;
+  width: auto !important;
+  margin: 0 !important;
+  padding: 0 16px !important;         /* matches the header rows' inset */
+  background: var(--gs-surface, #fff) !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+}
+
+/* Kill the focus-dependent shift for good.
+   Focusing To/From makes Gmail reveal the From row; the body wrapper
+   div.aoI (overflow-y:auto) overflows, a scrollbar appears and eats
+   ~15px, and everything jumps left. Click into subject/body, the row
+   collapses, the scrollbar goes, and it jumps back — which is exactly
+   the "misaligned only when I click To/From" symptom.
+
+   scrollbar-gutter reserves the scrollbar's lane permanently, so the
+   width is identical whether or not the scrollbar is present. The
+   layout stops depending on which field has focus. */
+html.gs-card-pane div.nH.Hd .aoI {
+  scrollbar-gutter: stable !important;
 }
 
 /* ---- Blend third-party add-on toolbars (experimental, off) --------
