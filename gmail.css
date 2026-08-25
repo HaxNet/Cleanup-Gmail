@@ -580,11 +580,19 @@ html.gs-reply-top [data-gs="reply-block"] .btb {
   padding: 4px 0 !important;
 }
 
-/* pinned variant */
+/* Pinned variant.
+   Deliberately NO z-index. Gmail's own overlay containers (div.wl/.wq/
+   .wp/.wo/.wn — the search suggestions, menus and dialogs) are
+   position:fixed with z-index:AUTO, and any explicit positive z-index
+   outranks auto. A z-index:6 here floated the reply bar over the search
+   dropdown.
+
+   Sticky is enough on its own: a positioned element already paints
+   above non-positioned thread content, and with z-index:auto it stays
+   below Gmail's later-in-DOM overlays where it belongs. */
 html.gs-reply-sticky [data-gs="reply-block"] {
   position: sticky !important;
   top: 0 !important;
-  z-index: 6 !important;
   background: var(--gs-surface, Canvas) !important;
 }
 html.gs-reply-sticky.gs-card-pane [data-gs="reply-block"] {
