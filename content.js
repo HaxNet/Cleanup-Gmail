@@ -264,6 +264,32 @@
                  e.getClientRects().length) || null;
   }
 
+  /* The pinned reply bar needs a z-index to sit above thread content as
+     it scrolls — but Gmail's overlays (search suggestions, menus) are
+     position:fixed with z-index:AUTO, and ANY positive z-index outranks
+     auto. Lowering the number doesn't help; 1 beats auto just as 6 does.
+
+     So confine it instead: mark the thread's scroll container so CSS can
+     give it `isolation: isolate`. That makes it a stacking context, and
+     our z-index is then scoped INSIDE it — enough to cover the messages,
+     while the container itself stays z-index:auto and loses to Gmail's
+     later-in-DOM body-level overlays. Both behaviours at once. */
+
+  function tagThreadScroller() {
+    const card = document.querySelector('.adn.ads');
+    if (!card) return;
+    let el = card, i = 0;
+    while (el && i++ < 20) {
+      const c = getComputedStyle(el);
+      if ((c.overflowY === 'auto' || c.overflowY === 'scroll') &&
+          el.scrollHeight > el.clientHeight + 4) {
+        if (el.dataset.gsThreadscroll !== '1') el.dataset.gsThreadscroll = '1';
+        return;
+      }
+      el = el.parentElement;
+    }
+  }
+
   function placeReplyTop() {
     const card = document.querySelector('.adn.ads');
     if (!card) return;
@@ -303,6 +329,16 @@
     if (!msgChild) return;
 
     replyChild.dataset.gs = 'reply-block';
+
+    // Mark whether the composer is actually open. Pinning a compact
+    // Reply/Forward bar is useful; pinning a full composer is not — it
+    // is tall enough to cover the thread you are replying to. CSS uses
+    // this to skip `position: sticky` while writing.
+    if (editor) {
+      if (replyChild.dataset.gsReplyOpen !== '1') replyChild.dataset.gsReplyOpen = '1';
+    } else if (replyChild.dataset.gsReplyOpen) {
+      delete replyChild.dataset.gsReplyOpen;
+    }
 
     // Sit directly above the messages but BELOW the subject header —
     // putting it above the subject reads as broken.
@@ -539,6 +575,7 @@
     if (settings['hide-ads']) tagAds();
     if (settings['newest-first']) tagMessageList();
     if (settings['reply-top']) placeReplyTop();
+    if (settings['reply-sticky']) tagThreadScroller();
     if (settings['date-headers']) dateHeaders();
     if (settings['quick-filters']) quickFilters();
     detectDark(false);

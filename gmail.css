@@ -580,20 +580,39 @@ html.gs-reply-top [data-gs="reply-block"] .btb {
   padding: 4px 0 !important;
 }
 
-/* Pinned variant.
-   Deliberately NO z-index. Gmail's own overlay containers (div.wl/.wq/
-   .wp/.wo/.wn — the search suggestions, menus and dialogs) are
-   position:fixed with z-index:AUTO, and any explicit positive z-index
-   outranks auto. A z-index:6 here floated the reply bar over the search
-   dropdown.
+/* Pinned variant — a two-part fix, and both parts are required.
 
-   Sticky is enough on its own: a positioned element already paints
-   above non-positioned thread content, and with z-index:auto it stays
-   below Gmail's later-in-DOM overlays where it belongs. */
-html.gs-reply-sticky [data-gs="reply-block"] {
+   The bind: the bar needs a z-index to stay above thread content while
+   scrolling, but Gmail's overlays (div.wl/.wq/.wp/.wo/.wn — search
+   suggestions, menus, dialogs) are position:fixed with z-index:AUTO,
+   and ANY positive z-index outranks auto. Dropping the z-index let the
+   messages scroll over the composer; keeping it hid the search dropdown.
+
+   Resolution: content.js tags the thread's scroll container, and
+   `isolation: isolate` turns it into a stacking context. The z-index
+   below is then scoped INSIDE that container — it covers the messages,
+   but the container itself remains z-index:auto and still loses to
+   Gmail's body-level overlays. */
+
+html.gs-reply-sticky [data-gs-threadscroll="1"] {
+  isolation: isolate;
+}
+/* Pin the compact Reply / Forward bar only.
+   An OPEN composer is tall, so pinning it covers the very thread you
+   are replying to — content.js sets data-gs-reply-open while the
+   editor is up, and this rule stands down for the duration. */
+html.gs-reply-sticky [data-gs="reply-block"]:not([data-gs-reply-open="1"]) {
   position: sticky !important;
   top: 0 !important;
+  z-index: 6 !important;              /* confined by the isolate above */
   background: var(--gs-surface, Canvas) !important;
+}
+
+/* While composing it scrolls with the thread — still first in the
+   document, so it stays above the messages without covering them. */
+html.gs-reply-sticky [data-gs="reply-block"][data-gs-reply-open="1"] {
+  position: static !important;
+  z-index: auto !important;
 }
 html.gs-reply-sticky.gs-card-pane [data-gs="reply-block"] {
   border-radius: var(--gs-card-radius) !important;
