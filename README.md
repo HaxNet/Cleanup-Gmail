@@ -15,7 +15,7 @@ Works in Chrome, Edge, Brave, Arc, Opera, Vivaldi — anything Chromium.
 Not on the Chrome Web Store — load it directly. Takes about a minute.
 
 1. **Download** this repo — green **Code** button → **Download ZIP** → unzip it
-   (or `git clone https://github.com/tekniq/Cleanup-Gmail.git`)
+   (or `git clone https://github.com/haxnet/Cleanup-Gmail.git`)
 2. Go to `chrome://extensions`
 3. Turn on **Developer mode** (top-right)
 4. Click **Load unpacked** and select the folder
