@@ -421,13 +421,44 @@ html.gs-card-pane .adn.ads {
   box-sizing: border-box !important;
 }
 
-/* kill Gmail's own inner frames so they don't double up on the card */
+/* Kill Gmail's own inner frames so they don't double up on the card.
+   Scoped INSIDE .adn.ads deliberately: div.gA.gt is also the inline
+   reply compose box, which is a SIBLING of the message card. Matching
+   .gA/.gt globally stripped the compose box's background and border,
+   leaving the Send button and formatting toolbar floating loose below
+   a stray divider. */
 html.gs-card-pane .adn.ads > .gs,
-html.gs-card-pane .gA, html.gs-card-pane .gt,
+html.gs-card-pane .adn.ads .gA,
+html.gs-card-pane .adn.ads .gt,
 html.gs-card-pane .adn.ads .iw {
   border: 0 !important;
   box-shadow: none !important;
   background: transparent !important;
+}
+
+/* Flatten the compose box's own nested frames.
+   Measured live with a reply open, inside our card:
+     div.gB.acO   full width, 1px border, square corners
+     td.I5        inset 64px, 1px border, 16px radius   <- the offset box
+     table.IG     16px radius on the top corners
+     div.aDh      12px radius
+   Nested inside a rounded card those read as a second, misaligned box
+   floating off-centre — which is what made the Send row look detached.
+   Flatten them so only our card paints. Left alone on purpose: the
+   "Describe your message" pill, the send buttons and the warning
+   banner, which are meant to have their own shapes. */
+html.gs-card-pane [data-gs="reply-block"] .gB,
+html.gs-card-pane [data-gs="reply-block"] td.I5,
+html.gs-card-pane [data-gs="reply-block"] table.IG,
+html.gs-card-pane [data-gs="reply-block"] .aDh,
+html.gs-card-pane div.gA.gt .gB,
+html.gs-card-pane div.gA.gt td.I5,
+html.gs-card-pane div.gA.gt table.IG,
+html.gs-card-pane div.gA.gt .aDh {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
 }
 
 /* the reply / forward box gets matching card treatment */
@@ -479,13 +510,18 @@ html.gs-card-pane.gs-dark.gs-card-raised [data-gs="reply-block"] {
 }
 
 /* ---- Newest message first ---------------------------------------
-   div.bh holds every message node in the thread (.kv / .kQ collapsed,
-   .h7 expanded) as direct children, in oldest-to-newest order.
+   The container holds every message node in the thread (.kv / .kQ
+   collapsed, .h7 expanded) as direct children, oldest to newest.
 
-   Confirmed live that it is NOT a scroll container and the reply bar
-   lives outside it, so column-reverse here is safe — unlike the earlier
-   flex attempt that collapsed the thread scroller.                   */
+   [data-gs-msglist] is resolved at runtime by content.js — the lowest
+   common ancestor of the message nodes. An earlier version hardcoded
+   div.bh, a class seen on one thread, which silently did nothing on
+   threads shaped differently. div.bh stays only as a fallback.
 
+   content.js refuses to tag a scroll container or one holding the
+   reply bar, so flexing here can't collapse thread scrolling.       */
+
+html.gs-newest-first [data-gs-msglist="1"],
 html.gs-newest-first div.bh {
   display: flex !important;
   flex-direction: column-reverse !important;

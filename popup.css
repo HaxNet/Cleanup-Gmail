@@ -37,7 +37,19 @@ body {
 h1 { font-size: 14px; margin: 0; font-weight: 650; letter-spacing: -.01em; }
 .top p { margin: 1px 0 0; font-size: 11px; color: var(--muted); }
 
-.master input { position: absolute; opacity: 0; pointer-events: none; }
+/* position:relative is load-bearing, not decoration.
+   The real checkbox is position:absolute and visually hidden. Without a
+   positioned ancestor its containing block becomes the INITIAL containing
+   block, so clicking the label focuses a checkbox that Chrome thinks is
+   somewhere else entirely — it scrolls the popup to that phantom offset
+   and you get a blank white panel until you reopen it. Containing the
+   input inside its own row keeps any focus scroll a no-op. */
+.master { position: relative; }
+.master input {
+  position: absolute; top: 0; left: 0;
+  width: 1px; height: 1px; margin: 0;
+  opacity: 0; pointer-events: none;
+}
 .master .track {
   display: block; width: 40px; height: 23px; border-radius: 999px;
   background: var(--track); position: relative; cursor: pointer;
@@ -97,12 +109,17 @@ input[type="color"] {
 .toggle {
   display: flex; align-items: flex-start; gap: 10px;
   padding: 7px 0; border-top: 1px solid var(--line);
+  position: relative;          /* contains the hidden checkbox — see .master */
 }
 .toggle:first-of-type { border-top: 0; }
 .toggle .txt { flex: 1; }
 .toggle .lbl { display: block; }
 .toggle .hint { display: block; font-size: 11px; color: var(--muted); margin-top: 1px; }
-.toggle input { position: absolute; opacity: 0; pointer-events: none; }
+.toggle input {
+  position: absolute; top: 0; left: 0;
+  width: 1px; height: 1px; margin: 0;
+  opacity: 0; pointer-events: none;
+}
 .toggle .track {
   flex: none; margin-top: 2px;
   display: block; width: 32px; height: 19px; border-radius: 999px;
@@ -142,7 +159,23 @@ textarea {
   border-color: var(--accent);
   background: color-mix(in srgb, var(--accent) 6%, var(--field));
 }
-.hint a { color: var(--accent); }
+.hint a, .linklike { color: var(--accent); }
+.linklike {
+  background: none; border: 0; padding: 0; font: inherit;
+  text-decoration: underline; cursor: pointer;
+}
+
+/* Shown only when something throws — see showError() in popup.js */
+#gs-error {
+  display: none;
+  background: #fce8e6;
+  color: #b3261e;
+  border-bottom: 1px solid #f3b8b4;
+  padding: 8px 12px;
+  font-size: 11px;
+  line-height: 1.4;
+  word-break: break-word;
+}
 
 /* opened in a full tab rather than the popup */
 body.in-tab { width: 420px; margin: 0 auto; padding-bottom: 24px; }

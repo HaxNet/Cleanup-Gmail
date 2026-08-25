@@ -9,6 +9,34 @@
 
   let S = { ...GS_DEFAULTS };
   const $ = id => document.getElementById(id);
+
+  /* ---------- never fail silently --------------------------------
+     A throw inside a click handler used to leave the panel blank with
+     no clue why. Surface it in the UI instead so it can be read and
+     reported, and so the rest of the panel keeps working.          */
+
+  function showError(what, err) {
+    try {
+      let bar = document.getElementById('gs-error');
+      if (!bar) {
+        bar = document.createElement('div');
+        bar.id = 'gs-error';
+        document.body.insertBefore(bar, document.body.firstChild);
+      }
+      bar.textContent = what + ': ' + (err && (err.message || err));
+      bar.style.display = 'block';
+    } catch (e) { /* last resort: don't cascade */ }
+    console.error('[Cleanup Gmail]', what, err);
+  }
+
+  window.addEventListener('error', e => showError('Error', e.error || e.message));
+  window.addEventListener('unhandledrejection', e => showError('Promise', e.reason));
+
+  // Wrap a handler so one bad click can't take the panel down.
+  const guard = (label, fn) => function (...args) {
+    try { return fn.apply(this, args); }
+    catch (err) { showError(label, err); }
+  };
   let flashTimer, writeTimer, retryTimer;
 
   /* ---------- persistence -----------------------------------------
@@ -76,9 +104,9 @@
 
   function set(key, value, kind) {
     S[key] = value;
-    paintChrome();
-    preview();
-    save(kind);
+    try { paintChrome(); } catch (e) { showError('paint', e); }
+    try { preview(); }    catch (e) { showError('preview', e); }
+    try { save(kind); }   catch (e) { showError('save', e); }
   }
 
   /* ---------- build the toggle groups ---------------------------- */
@@ -152,7 +180,12 @@
   /* ---------- reflect state into the popup's own chrome ---------- */
 
   function paintChrome() {
-    document.documentElement.style.setProperty('--accent', S.accent);
+    // An invalid custom property poisons every rule that reads it —
+    // e.g. a segmented button would keep color:#fff but lose its
+    // background, rendering white-on-white. Fall back instead.
+    const accent = /^#[0-9a-fA-F]{6}$/.test(String(S.accent))
+      ? S.accent : GS_DEFAULTS.accent;
+    document.documentElement.style.setProperty('--accent', accent);
     document.body.classList.toggle('off', !S.enabled);
     $('status').textContent = S.enabled
       ? 'Active on mail.google.com'

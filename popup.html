@@ -44,9 +44,9 @@
       <div class="row">
         <label>Row density</label>
         <div class="seg" data-key="density">
-          <button data-v="comfortable">Roomy</button>
-          <button data-v="cozy">Cozy</button>
-          <button data-v="compact">Tight</button>
+          <button type="button" data-v="comfortable">Roomy</button>
+          <button type="button" data-v="cozy">Cozy</button>
+          <button type="button" data-v="compact">Tight</button>
         </div>
       </div>
       <div class="row">
@@ -76,9 +76,9 @@
       <div class="row">
         <label>Card depth</label>
         <div class="seg" data-key="cardStyle">
-          <button data-v="flat">Flat</button>
-          <button data-v="soft">Soft</button>
-          <button data-v="raised">Raised</button>
+          <button type="button" data-v="flat">Flat</button>
+          <button type="button" data-v="soft">Soft</button>
+          <button type="button" data-v="raised">Raised</button>
         </div>
       </div>
       <div class="row">
@@ -129,8 +129,8 @@
     <section class="card">
       <h2>Backup &amp; transfer</h2>
       <div class="btnrow">
-        <button id="copyBtn" class="ghost">Copy settings</button>
-        <button id="fileBtn" class="ghost">Download .json</button>
+        <button type="button" id="copyBtn" class="ghost">Copy settings</button>
+        <button type="button" id="fileBtn" class="ghost">Download .json</button>
       </div>
       <input type="file" id="fileInput" accept="application/json,.json" hidden>
       <div id="dropZone">
@@ -138,13 +138,13 @@
           placeholder="Drop your .json file here, or paste settings and press Import"></textarea>
       </div>
       <div class="btnrow">
-        <button id="importBtn" class="ghost">Import</button>
-        <button id="pickBtn" class="ghost">Choose file…</button>
+        <button type="button" id="importBtn" class="ghost">Import</button>
+        <button type="button" id="pickBtn" class="ghost">Choose file…</button>
         <span class="note" id="ioMsg"></span>
       </div>
       <p class="hint">Dragging the file onto the box is the most reliable —
         a file dialog can close this popup. If it does,
-        <a href="#" id="openTab">open this panel in a tab</a> and use Choose file there.</p>
+        <button type="button" id="openTab" class="linklike">open this panel in a tab</button> and use Choose file there.</p>
     </section>
 
     <section class="card">
@@ -158,7 +158,7 @@
     </section>
 
     <div class="footer">
-      <button id="reset" class="ghost">Reset to defaults</button>
+      <button type="button" id="reset" class="ghost">Reset to defaults</button>
       <span class="saved" id="saved">Saved</span>
     </div>
   </main>

@@ -180,6 +180,44 @@
 
   let moving = false;
 
+  /* ---------- locate the message-list container --------------------
+     Reversing the thread used to key off `div.bh`, a class observed on
+     one thread and hardcoded. Gmail's class names vary by thread shape
+     and rollout, so it silently did nothing elsewhere.
+
+     Resolve it at runtime instead: take every message node in the
+     thread and walk up to their lowest common ancestor. Tag it so CSS
+     can flip the order. Attribute writes don't retrigger the observer
+     (it watches childList only), so this is free to run every scan. */
+
+  function tagMessageList() {
+    const msgs = Array.from(document.querySelectorAll('.kv, .kQ, .h7, .adn.ads'))
+      .filter(el => el.getClientRects().length);
+    if (msgs.length < 2) return;          // nothing to reverse
+
+    let box = msgs[0];
+    let guard = 0;
+    while (box && guard++ < 40 && box !== document.body && !msgs.every(n => box.contains(n))) {
+      box = box.parentElement;
+    }
+    if (!box) return;
+
+    // Never flex the scroll container — that collapses its overflow and
+    // kills thread scrolling (learned the hard way with the reply bar).
+    const cs = getComputedStyle(box);
+    if ((cs.overflowY === 'auto' || cs.overflowY === 'scroll') &&
+        box.scrollHeight > box.clientHeight + 4) return;
+
+    // If the reply bar lives inside this container, reversing would
+    // fling it to the bottom. Leave the thread alone rather than
+    // scramble it.
+    const bar = Array.from(document.querySelectorAll('.amn'))
+      .find(e => e.getBoundingClientRect().height > 10);
+    if (bar && box.contains(bar)) return;
+
+    if (box.dataset.gsMsglist !== '1') box.dataset.gsMsglist = '1';
+  }
+
   // Verified against a live Gmail thread. The structure is:
   //   div.Tm.aeJ            <- scroll container (never restyle its layout)
   //     div.aeF
@@ -209,15 +247,48 @@
     return hits.pop() || null;
   }
 
-  function placeReplyTop() {
-    const bar = findReplyBar();
-    const card = document.querySelector('.adn.ads');
-    if (!bar || !card) return;
+  /* Once Reply is clicked, Gmail replaces the button row with an inline
+     compose editor — a different element, and the .amn bar collapses to
+     zero height, so findReplyBar() stopped matching and the open reply
+     box was left at the bottom.
 
-    // nearest ancestor containing BOTH the reply bar and the messages
+     Find the editor by its accessible name, which Gmail keeps stable.
+     Pop-out compose windows use the same markup, so callers must verify
+     the match actually sits inside the thread (see the body guard in
+     placeReplyTop) before moving anything. */
+
+  function findComposeBox() {
+    return Array.from(document.querySelectorAll(
+      '[role="textbox"][aria-label], div.Am.Al.editable[contenteditable="true"]'))
+      .find(e => /message body/i.test(e.getAttribute('aria-label') || '') &&
+                 e.getClientRects().length) || null;
+  }
+
+  function placeReplyTop() {
+    const card = document.querySelector('.adn.ads');
+    if (!card) return;
+
+    // An open compose editor wins over the collapsed button bar.
+    const editor = findComposeBox();
+    const bar = editor || findReplyBar();
+    if (!bar) return;
+
+    // Nearest ancestor containing BOTH the reply and the messages.
+    // Measured live: an OPEN compose editor sits 24 levels below that
+    // ancestor (the idle .amn bar is far shallower). The old limit of 14
+    // stopped short, left `box` on an element that didn't contain the
+    // card, and the function bailed — which is why clicking Reply never
+    // moved anything. Climb until we actually find it, or hit <body>.
     let box = bar.parentElement, guard = 0;
-    while (box && guard++ < 14 && !box.contains(card)) box = box.parentElement;
-    if (!box) return;
+    while (box && guard++ < 40 && box !== document.body && !box.contains(card)) {
+      box = box.parentElement;
+    }
+    if (!box || !box.contains(card)) return;
+
+    // A pop-out "New Message" window uses the same compose markup, and
+    // walking up from it only meets the thread at <body>. Moving that
+    // would rearrange the page itself — bail instead.
+    if (box === document.body || box === document.documentElement) return;
 
     // that ancestor's direct child which wraps the reply bar
     let replyChild = bar;
@@ -237,8 +308,24 @@
     // putting it above the subject reads as broken.
     if (replyChild.nextElementSibling === msgChild) return;   // converged
 
+    // Moving a node can blur a focused contenteditable, which would eat
+    // the caret the moment the reply box opens. Remember and restore it.
+    const focused = document.activeElement;
+    const hadFocus = focused && replyChild.contains(focused);
+
     moving = true;
     try { box.insertBefore(replyChild, msgChild); } catch (e) { /* ignore */ }
+
+    if (hadFocus && document.contains(focused)) {
+      try { focused.focus({ preventScroll: true }); } catch (e) { /* ignore */ }
+    }
+    // The reply just jumped from the bottom of the thread to the top, so
+    // bring it into view rather than leaving the user staring at where it
+    // used to be.
+    if (editor) {
+      try { replyChild.scrollIntoView({ block: 'center' }); } catch (e) { /* ignore */ }
+    }
+
     // MutationObserver fires asynchronously, so the flag has to outlive
     // this tick or the observer would already see moving === false and
     // schedule a redundant scan for our own edit.
@@ -450,6 +537,7 @@
     if (!settings.enabled) return;
     TAGS.forEach(([name, sels]) => tag(name, sels));
     if (settings['hide-ads']) tagAds();
+    if (settings['newest-first']) tagMessageList();
     if (settings['reply-top']) placeReplyTop();
     if (settings['date-headers']) dateHeaders();
     if (settings['quick-filters']) quickFilters();
