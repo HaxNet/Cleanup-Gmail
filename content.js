@@ -290,6 +290,71 @@
     }
   }
 
+  /* ---------- tag add-on rows inside compose windows --------------
+     Boomerang, Mailtrack, Streak and friends inject their own bars
+     into the compose window. CSS alone can't target them: their class
+     names are unknown and differ per add-on.
+
+     So identify them structurally. Gmail's own class names are short
+     and obfuscated (aoI, I5, gU, nH, aDh); add-ons ship readable ones
+     ("bmr-send-later", "mailtrack-bar"). Anything wordy or hyphenated
+     inside a compose window that also paints a background or border is
+     almost certainly injected.
+
+     Only tags — the styling is opt-in via the Blend add-on toolbars
+     toggle, so tagging costs nothing when it's off.                  */
+
+  /* Vendor names only — NO structural guessing.
+
+     An earlier version assumed "wordy or hyphenated class = add-on".
+     Measured against the real compose window that flagged 15 of 15
+     Gmail classes: pYTkkf-JX-I, T-I-Js-IF, J-J5-Ji, Ht-ql-thxFLe-aOr,
+     LW-avf, gmail_signature… Gmail's Closure classes are full of
+     hyphens, so the toggle would have flattened Gmail's own compose UI
+     rather than the add-on's.
+
+     Matching known vendors is narrower — an unrecognised add-on isn't
+     covered — but it can never damage Gmail itself. New vendors are one
+     entry in this list. */
+
+  const ADDON_NAME = /inboxsdk|boomerang|mailtrack|streak|mixmax|grammarly|yesware|hubspot|\bbmr[-_]|\bmt-/i;
+
+  function looksInjected(el) {
+    const cls = String(el.className || '').trim();
+    if (!cls) return false;
+    return ADDON_NAME.test(cls);
+  }
+
+  function tagAddonRows() {
+    document.querySelectorAll('.inboxsdk__compose, div.nH.Hd').forEach(dlg => {
+      if (dlg.getBoundingClientRect().width < 300) return;
+
+      /* Must be a REAL compose window, proven by an editable message
+         body inside it. Measured live: Boomerang stamps
+         `boomeranginlinebutton` onto inbox list rows (tr.zA) and
+         Mailsuite adds `mt-list` — both match the vendor pattern below.
+         div.nH.Hd alone is not specific enough to keep those rows out,
+         and flattening the inbox would be a spectacular own goal. */
+      if (!dlg.querySelector('[role="textbox"][aria-label], div.Am[contenteditable="true"]')) return;
+
+      dlg.querySelectorAll('div, table, tr, section').forEach(el => {
+        const r = el.getBoundingClientRect();
+        if (r.height < 18 || r.height > 200 || r.width < 200) return;
+
+        const c = getComputedStyle(el);
+        const paints = c.backgroundColor !== 'rgba(0, 0, 0, 0)' ||
+                       parseFloat(c.borderTopWidth) > 0 ||
+                       parseFloat(c.borderBottomWidth) > 0;
+
+        if (paints && looksInjected(el)) {
+          if (el.dataset.gsAddon !== '1') el.dataset.gsAddon = '1';
+        } else if (el.dataset.gsAddon) {
+          delete el.dataset.gsAddon;
+        }
+      });
+    });
+  }
+
   function placeReplyTop() {
     const card = document.querySelector('.adn.ads');
     if (!card) return;
@@ -576,6 +641,7 @@
     if (settings['newest-first']) tagMessageList();
     if (settings['reply-top']) placeReplyTop();
     if (settings['reply-sticky']) tagThreadScroller();
+    if (settings['blend-addons']) tagAddonRows();
     if (settings['date-headers']) dateHeaders();
     if (settings['quick-filters']) quickFilters();
     detectDark(false);

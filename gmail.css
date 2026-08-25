@@ -489,6 +489,36 @@ html.gs-card-pane div.gA.gt .aoI {
   box-sizing: border-box !important;
 }
 
+/* ---- Card-style compose window -----------------------------------
+   div.nH.Hd is Gmail's own pop-out compose wrapper. Rounding and
+   shadowing it frames the New Message window as a card. Add-on bars
+   (Boomerang's Send Later row, measured L166 R1480 against a compose
+   at L150 R1496) render inside this wrapper, so they are framed too
+   with no per-add-on rule.
+
+   TOP CORNERS ONLY, and no clipping — both learned the hard way.
+   Gmail's compose footer overflows its own dialog: div.nH.Hd ends at
+   1164 while the toolbar (div.aDh / table.IZ) runs to 1228, 64px
+   lower. Rounding all four corners drew the card's edge ABOVE the Send
+   row and left the toolbar stranded on the page background. And
+   overflow:hidden did not clip it, because the footer escapes the
+   clip — it only added a hard rounded edge mid-window.
+
+   Rounding just the top frames the window without cutting anything
+   off, with or without an add-on bar. */
+
+html.gs-card-compose div.nH.Hd {
+  border-radius: var(--gs-card-radius, 16px) var(--gs-card-radius, 16px) 0 0 !important;
+  box-shadow:
+    0 var(--gs-sh-y1) var(--gs-sh-b1) rgba(0, 0, 0, var(--gs-sh-a1)),
+    0 var(--gs-sh-y2) var(--gs-sh-b2) rgba(0, 0, 0, var(--gs-sh-a2)) !important;
+}
+
+/* the minimised compose strip keeps its own small radius */
+html.gs-card-compose div.nH.Hd.aXJ {
+  border-radius: var(--gs-radius, 12px) var(--gs-radius, 12px) 0 0 !important;
+}
+
 /* ---- Blend third-party add-on toolbars (experimental, off) --------
    Boomerang, Mailtrack, Streak and friends inject their own rows into
    the compose area. Nothing here clips or hides them — there is no
@@ -501,11 +531,39 @@ html.gs-card-pane div.gA.gt .aoI {
    badges keep their own colours. The :not() list spares Gmail's own
    compose furniture.
 
-   Off by default and honestly experimental: it is written against
-   screenshots, not a DOM I could measure, and some add-ons use their
-   background meaningfully. If it makes an add-on look worse, turn it
-   back off — or target that add-on precisely via Advanced CSS. */
+   content.js tags injected rows as [data-gs-addon] by structure rather
+   than by name — Gmail's classes are short and obfuscated (aoI, I5, gU)
+   while add-ons ship readable ones (bmr-send-later, mailtrack-bar).
+   That covers compose windows, which the earlier thread-only selectors
+   never reached.
 
+   Container chrome only: background, border, shadow, stray width. The
+   add-on's own buttons and badges keep their colours, so Boomerang's
+   red Send Later and green Respondable meter still read correctly.
+
+   Off by default. If it makes an add-on look worse, turn it back off —
+   or target that add-on precisely via Advanced CSS. */
+
+/* Box model only — background, border and radius are left alone.
+
+   Measured against Boomerang's real bar:
+     div.sendLaterTable.boomerangReply.gm-send-later-table
+     L166 R1480 h54, bg white, border-radius 0 0 16px 16px,
+     inset 16px each side, flush to the compose bottom edge.
+
+   It is already styled to match the compose. Stripping its background
+   and radius — which the first version of this rule did — would have
+   removed the rounded base and made it look worse, not better. So this
+   only corrects genuine misalignment: overhang and negative margins. */
+
+html.gs-blend-addons [data-gs-addon="1"] {
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+/* thread-side reply block, same treatment */
 html.gs-blend-addons [data-gs="reply-block"] > *:not(.gB):not(.aoI):not(.amn):not(table):not(.gA),
 html.gs-blend-addons div.gA.gt > *:not(.gB):not(.aoI):not(.amn):not(table) {
   background: transparent !important;
@@ -525,10 +583,13 @@ html.gs-blend-addons div.gA.gt > *:not(.gB):not(.aoI):not(.amn):not(table) {
    div.aoI (overflow-y:auto), raised a scrollbar and pulled every row
    15px narrower. That is the To/From misalignment.
 
-   :not() keeps us out of any InboxSDK compose surface, which is what
-   Boomerang, Mailtrack and Streak build their windows on. */
-html.gs-card-pane .ip.iq:not(.inboxsdk__compose *),
-html.gs-card-pane .amn:not(.inboxsdk__compose *),
+   The guard is div.nH.Hd — Gmail's OWN pop-out compose wrapper — not
+   .inboxsdk__compose. Verified live that they are the same element, but
+   the inboxsdk class only exists while an add-on is installed. Guarding
+   on it would have silently stopped protecting the compose the moment
+   Boomerang and Mailsuite were both removed. div.nH.Hd is always there. */
+html.gs-card-pane .ip.iq:not(div.nH.Hd *),
+html.gs-card-pane .amn:not(div.nH.Hd *),
 html.gs-card-pane [data-gs="reply-block"] .aDh {
   max-width: var(--gs-pane) !important;
   margin: 0 auto var(--gs-gap) !important;
