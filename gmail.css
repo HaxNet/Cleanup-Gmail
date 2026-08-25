@@ -421,6 +421,20 @@ html.gs-card-pane .adn.ads {
   box-sizing: border-box !important;
 }
 
+/* Collapsed messages (.kv / .kQ) are not cards, so nothing constrained
+   them and they ran the full container width — measured L485 w960
+   against a card at L515 w900, i.e. 30px prouder on each side.
+   Match the card's width and centring, but deliberately no background,
+   border or shadow: the expanded message stays the only thing wearing
+   a card, which is what makes it obvious at a glance. */
+html.gs-card-pane .kv,
+html.gs-card-pane .kQ {
+  max-width: var(--gs-pane) !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  box-sizing: border-box !important;
+}
+
 /* Kill Gmail's own inner frames so they don't double up on the card.
    Scoped INSIDE .adn.ads deliberately: div.gA.gt is also the inline
    reply compose box, which is a SIBLING of the message card. Matching
@@ -469,6 +483,34 @@ html.gs-card-pane div.gA.gt .aDh {
 html.gs-card-pane [data-gs="reply-block"] .aoI,
 html.gs-card-pane div.gA.gt .aoI {
   width: auto !important;
+  max-width: 100% !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* ---- Blend third-party add-on toolbars (experimental, off) --------
+   Boomerang, Mailtrack, Streak and friends inject their own rows into
+   the compose area. Nothing here clips or hides them — there is no
+   overflow:hidden or fixed height on any compose container — but they
+   keep their own background and border, so they read as a slab bolted
+   under our card rather than part of it.
+
+   This flattens the CONTAINER only (background, border, shadow, stray
+   width) on direct children we don't recognise, so their buttons and
+   badges keep their own colours. The :not() list spares Gmail's own
+   compose furniture.
+
+   Off by default and honestly experimental: it is written against
+   screenshots, not a DOM I could measure, and some add-ons use their
+   background meaningfully. If it makes an add-on look worse, turn it
+   back off — or target that add-on precisely via Advanced CSS. */
+
+html.gs-blend-addons [data-gs="reply-block"] > *:not(.gB):not(.aoI):not(.amn):not(table):not(.gA),
+html.gs-blend-addons div.gA.gt > *:not(.gB):not(.aoI):not(.amn):not(table) {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
   max-width: 100% !important;
   margin-left: 0 !important;
   margin-right: 0 !important;
