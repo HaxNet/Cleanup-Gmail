@@ -281,6 +281,18 @@
     });
   }
 
+  /* An earlier version inserted real <tr> header rows here. That broke
+     clicking: Gmail resolves a click to a message by the row's INDEX
+     within the table, so every injected row shifted the mapping and
+     opening an email opened the one below it.
+
+     Fix: insert nothing. Tag the first row of each group with
+     data-gs-day and let CSS draw the label in an absolutely-positioned
+     ::before. No nodes added, so Gmail's indexing is untouched.
+
+     Bonus: the observer watches childList only, so attribute writes
+     can't retrigger a scan — no convergence dance needed. */
+
   function dateHeaders() {
     const tbody = document.querySelector('table.F.cf.zt tbody');
     if (!tbody) return;
@@ -288,33 +300,29 @@
     const rows = Array.from(tbody.querySelectorAll('tr.zA'));
     if (!rows.length) return;
 
-    const wanted = [];
     let last = null;
     rows.forEach(r => {
       const d = rowDate(r);
-      if (!d) return;
-      const lab = dateLabel(d);
-      if (lab !== last) { wanted.push({ row: r, lab }); last = lab; }
+      const lab = d ? dateLabel(d) : null;
+      const want = (lab && lab !== last) ? lab : null;
+      if (lab) last = lab;
+
+      if (want) {
+        if (r.dataset.gsDay !== want) r.dataset.gsDay = want;
+      } else if (r.dataset.gsDay) {
+        delete r.dataset.gsDay;
+      }
     });
 
-    const existing = tbody.querySelectorAll('tr[data-gs-hdr]');
-    const sig = wanted.map(w => w.lab).join('|');
-    // converged: same labels AND our headers are still in the DOM
-    if (tbody.dataset.gsHdrSig === sig && existing.length === wanted.length) return;
-
-    moving = true;
-    existing.forEach(e => e.remove());
-    wanted.forEach(({ row, lab }) => {
-      const tr = document.createElement('tr');
-      tr.setAttribute('data-gs-hdr', '1');
-      const td = document.createElement('td');
-      td.setAttribute('colspan', '12');
-      td.textContent = lab;
-      tr.appendChild(td);
-      try { row.parentElement.insertBefore(tr, row); } catch (e) { /* ignore */ }
-    });
-    tbody.dataset.gsHdrSig = sig;
-    setTimeout(() => { moving = false; }, 0);
+    // Remove header rows left behind by an older version of this
+    // extension, which would still be shifting Gmail's row indexes.
+    const legacy = tbody.querySelectorAll('tr[data-gs-hdr]');
+    if (legacy.length) {
+      moving = true;
+      legacy.forEach(e => e.remove());
+      if (tbody.dataset.gsHdrSig) delete tbody.dataset.gsHdrSig;
+      setTimeout(() => { moving = false; }, 0);
+    }
   }
 
   /* ---------- quick filters in the left sidebar -------------------

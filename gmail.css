@@ -235,29 +235,41 @@ html.gs-unread-bar tr.zA.zE {
   box-shadow: inset 3px 0 0 var(--gs-accent) !important;
 }
 
-/* ---- Injected date headers --------------------------------------
-   content.js inserts <tr data-gs-hdr> before the first row of each
-   group. The row is display:block because Gmail's list rows are flex
-   and a normal table-row would not lay out correctly here. */
+/* ---- Date headers -----------------------------------------------
+   Drawn as a pseudo-element, NOT as injected rows.
 
-html.gs-date-headers tr[data-gs-hdr] {
-  display: block !important;
-  background: transparent !important;
-  border: 0 !important;
+   Gmail resolves a click to a message by the row's index in the table,
+   so adding <tr> elements made every click open the wrong email. Here
+   content.js only sets data-gs-day on the first row of each group and
+   CSS paints the label above it — zero nodes added, indexing intact.
+
+   position:absolute keeps the ::before out of the row's flex flow
+   (tr.zA is display:flex, so an in-flow ::before would become a cell).
+   pointer-events:none so the label can never eat a click. */
+
+html.gs-date-headers tr.zA[data-gs-day] {
+  position: relative !important;
+  margin-top: 34px !important;
 }
-html.gs-date-headers tr[data-gs-hdr] > td {
-  display: block !important;
-  border: 0 !important;
-  background: transparent !important;
-  padding: 18px 0 6px 14px !important;
-  font-size: 11px !important;
-  font-weight: 700 !important;
-  letter-spacing: .09em !important;
-  text-transform: uppercase !important;
-  opacity: .45 !important;
+html.gs-date-headers tr.zA[data-gs-day]::before {
+  content: attr(data-gs-day);
+  position: absolute;
+  top: -25px;
+  left: 15px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  opacity: .45;
+  pointer-events: none;
+  white-space: nowrap;
 }
-/* first header shouldn't push the list down */
-html.gs-date-headers tr[data-gs-hdr]:first-child > td { padding-top: 4px !important; }
+/* first group sits closer to the top of the list */
+html.gs-date-headers tr.zA[data-gs-day]:first-child { margin-top: 26px !important; }
+
+/* Belt and braces: if a header row from an older build is still in the
+   DOM before content.js clears it, keep it from occupying space. */
+html.gs-date-headers tr[data-gs-hdr] { display: none !important; }
 
 html.gs-hide-ads tr[data-gs-ad="1"] { display: none !important; }
 
