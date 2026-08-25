@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqRwIUHTF8U/HhAtym8BubtdlG5LVz1tqp66BdmDjLqvIn3sPWM2NJr942skWmR0AHR5pwiNSMufRlLOmbgoMYzUawq7R/VOXuADdz7jkivYuOAlmYE1B6ciEhPxX4CbSSLRRY0MIEFuOO/8NeUco4cjJUCJK87j4YZKOsoKok+Bl+5J9c8v8tvPVZ7vd1KwjNo2WQ/OQO+7HwnveOgZKVwiVpxjHB+XYqVDGyQzvUU0SLRpxJ93vIyKxIu/q8oWU/LIY3Ncr4u5lYm1IdFIu0qgLiqGtwcY0QY3RTBhROG7RwPoxl6IEoZ49J/1gbjyvrtB/hZKQGuUyz8WJpTVBswIDAQAB",
   "name": "Cleanup Gmail — Minimal UI",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "description": "Strip Gmail down to a clean, minimal, distraction-free interface. Toggle away clutter, set your own accent color, font, and density.",
   "permissions": [
     "storage"

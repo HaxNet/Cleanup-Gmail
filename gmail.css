@@ -517,10 +517,19 @@ html.gs-blend-addons div.gA.gt > *:not(.gB):not(.aoI):not(.amn):not(table) {
   box-sizing: border-box !important;
 }
 
-/* the reply / forward box gets matching card treatment */
-html.gs-card-pane .ip.iq,
-html.gs-card-pane .amn,
-html.gs-card-pane .aDh {
+/* The reply / forward box gets matching card treatment.
+
+   Scoped to the thread on purpose. .aDh was listed here unscoped, and
+   it ALSO exists in the pop-out New Message window — where the 10px
+   vertical padding made the block 20px taller (116 -> 136), overflowed
+   div.aoI (overflow-y:auto), raised a scrollbar and pulled every row
+   15px narrower. That is the To/From misalignment.
+
+   :not() keeps us out of any InboxSDK compose surface, which is what
+   Boomerang, Mailtrack and Streak build their windows on. */
+html.gs-card-pane .ip.iq:not(.inboxsdk__compose *),
+html.gs-card-pane .amn:not(.inboxsdk__compose *),
+html.gs-card-pane [data-gs="reply-block"] .aDh {
   max-width: var(--gs-pane) !important;
   margin: 0 auto var(--gs-gap) !important;
   padding: 10px 26px !important;
