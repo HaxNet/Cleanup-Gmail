@@ -1,0 +1,628 @@
+/* ==================================================================
+   gmail.css — every rule is gated behind a gs-* class on <html>.
+   Nothing applies unless the matching toggle is on, so turning the
+   extension off returns Gmail to 100% stock with zero leftovers.
+
+   Selector strategy: [data-gs="..."] attributes are set by content.js
+   from stable aria-labels/roles. Gmail's own class names (.aeN, .zA…)
+   are kept as fallbacks — if Google reshuffles them, the data-gs hooks
+   still work, and the Advanced CSS box in the popup covers the rest.
+   ================================================================== */
+
+html.gs-on {
+  --gs-accent: #111111;
+  --gs-font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --gs-size: 14px;
+  --gs-pane: 900px;
+  --gs-radius: 12px;
+}
+
+/* ============ CHROME =============================================== */
+
+/* Top bar --------------------------------------------------------- */
+html.gs-hide-header [data-gs="header"],
+html.gs-hide-header header.gb_Kd,
+html.gs-hide-header #gb > div:first-child > div:first-child > a[aria-label*="Gmail"] {
+  display: none !important;
+}
+/* reclaim the vertical space the bar used to hold */
+html.gs-hide-header .aeH,
+html.gs-hide-header .no > .nH.bkK {
+  padding-top: 0 !important;
+}
+
+/* Search ---------------------------------------------------------- */
+html.gs-slim-search [data-gs="search"],
+html.gs-slim-search form#aso_search_form_anchor,
+html.gs-slim-search .gb_ie, html.gs-slim-search .aAy {
+  background: transparent !important;
+  box-shadow: none !important;
+  border: 1px solid rgba(128, 128, 128, .18) !important;
+  border-radius: var(--gs-radius) !important;
+  transition: border-color .15s ease, background .15s ease;
+}
+html.gs-slim-search [data-gs="search"]:focus-within,
+html.gs-slim-search form#aso_search_form_anchor:focus-within {
+  border-color: var(--gs-accent) !important;
+}
+/* search-options chevron */
+html.gs-slim-search .gb_ge, html.gs-slim-search .aA7 { opacity: .35 !important; }
+
+/* Apps grid / support / settings ---------------------------------- */
+html.gs-hide-apps [data-gs="apps"],
+html.gs-hide-apps [aria-label="Google apps"],
+html.gs-hide-apps [aria-label="Support"],
+html.gs-hide-apps [data-tooltip="Support"],
+html.gs-hide-apps [data-tooltip="Settings"] {
+  display: none !important;
+}
+
+/* Right side panel ------------------------------------------------ */
+html.gs-hide-sidepanel [data-gs="sidepanel"],
+html.gs-hide-sidepanel [aria-label="Side panel"],
+html.gs-hide-sidepanel .brC-brG,
+html.gs-hide-sidepanel .bAw,
+html.gs-hide-sidepanel .aTC,
+html.gs-hide-sidepanel .bBe {
+  display: none !important;
+  width: 0 !important;
+  min-width: 0 !important;
+}
+
+/* Left nav auto-hide ---------------------------------------------- */
+html.gs-autohide-nav [data-gs="nav"],
+html.gs-autohide-nav .aeN,
+html.gs-autohide-nav .wT {
+  width: 56px !important;
+  min-width: 56px !important;
+  overflow: hidden !important;
+  transition: width .18s ease, min-width .18s ease;
+  z-index: 20;
+}
+html.gs-autohide-nav [data-gs="nav"]:hover,
+html.gs-autohide-nav .aeN:hover,
+html.gs-autohide-nav .wT:hover {
+  width: 248px !important;
+  min-width: 248px !important;
+  background: Canvas;
+  box-shadow: 2px 0 14px rgba(0, 0, 0, .12);
+}
+
+/* Chat / Meet / Spaces -------------------------------------------- */
+html.gs-hide-chat [data-gs="chat"],
+html.gs-hide-chat .aBP,
+html.gs-hide-chat .aeZ,
+html.gs-hide-chat [aria-label="Chat"],
+html.gs-hide-chat [aria-label="Spaces"],
+html.gs-hide-chat [aria-label="Meet"] {
+  display: none !important;
+}
+
+/* Quick filters in the sidebar ------------------------------------
+   Injected by content.js above the user labels. Styled to sit with
+   Gmail's own nav items: same left inset, same pill on the right. */
+
+html.gs-quick-filters [data-gs-quick] {
+  padding: 4px 0 10px;
+}
+html.gs-quick-filters .gs-qf-head {
+  padding: 10px 0 4px 26px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  opacity: .45;
+}
+html.gs-quick-filters a.gs-qf {
+  display: block;
+  padding: 6px 12px 6px 26px;
+  margin-right: 12px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: inherit;
+  text-decoration: none;
+  border-radius: 0 999px 999px 0;
+  cursor: pointer;
+}
+html.gs-quick-filters a.gs-qf:hover {
+  background: color-mix(in srgb, var(--gs-accent) 10%, transparent);
+}
+html.gs-quick-filters a.gs-qf.gs-qf-on {
+  background: color-mix(in srgb, var(--gs-accent) 16%, transparent);
+  color: var(--gs-accent);
+  font-weight: 700;
+}
+
+/* Inbox category tabs --------------------------------------------- */
+html.gs-hide-tabs [data-gs="tabs"],
+html.gs-hide-tabs .aKh,
+html.gs-hide-tabs .aJi {
+  display: none !important;
+}
+
+/* Footer ----------------------------------------------------------- */
+html.gs-hide-footer [data-gs="footer"],
+html.gs-hide-footer .xk,
+html.gs-hide-footer .bhZ {
+  display: none !important;
+}
+
+/* ============ MESSAGE LIST ========================================= */
+
+/* ---- Narrow, centered list --------------------------------------
+   Confirmed live structure:
+     div.Nu.tf.aZ6   <- the list SCROLL container (leave its layout alone)
+       div.ae4       <- width wrapper: this is what to cap and center
+         table.F.cf.zt
+           tr.zA     <- note: display:flex, so cells are flex items
+   Capping .ae4 rather than the table keeps the scrollbar at the window
+   edge instead of floating in the middle of the page.               */
+
+html.gs-narrow-list .ae4,
+html.gs-narrow-list .G-atb,
+html.gs-narrow-list .aqL {
+  max-width: var(--gs-list) !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+/* CRITICAL: tr.zA is display:flex AND flex-wrap:wrap in Gmail's own CSS.
+   Any cell left at flex-basis:auto uses its full CONTENT width as its
+   base size, so the subject cell (≈1030px of text) wraps to a second
+   line before it ever shrinks — that is what turned every row into a
+   stacked 3-line block. nowrap + basis 0 keeps rows on one line. */
+html.gs-narrow-list tr.zA { flex-wrap: nowrap !important; }
+
+/* tidy the columns: fixed sender width, right-aligned date */
+/* border-box matters: Gmail puts ~32px of padding on this cell, so a
+   content-box flex-basis of 195px measured 227px in practice. */
+html.gs-narrow-list tr.zA > td.yX {
+  flex: 0 0 195px !important;
+  max-width: 195px !important;
+  box-sizing: border-box !important;
+}
+html.gs-narrow-list tr.zA > td.xW {
+  text-align: right !important;
+  flex: 0 0 auto !important;
+  padding-right: 10px !important;
+}
+/* basis 0%, never auto — see the flex-wrap note above.
+   No overflow clamp here: attachment chips live INSIDE this cell
+   (span.brg > div.brc > div.brd > td.xY.a4W), so clipping it would
+   cut them off. min-width:0 is what actually allows the shrink. */
+html.gs-narrow-list tr.zA > td.xY.a4W {
+  flex: 1 1 0% !important;
+  min-width: 0 !important;
+}
+
+/* soften the row: no hard dividers, rounded hover block */
+html.gs-narrow-list tr.zA,
+html.gs-narrow-list tr.zA > td {
+  border: 0 !important;
+  box-shadow: none !important;
+  background-image: none !important;
+}
+/* Radius belongs on the ROW only.
+   Do NOT put it on td:first-child / td:last-child — that cell is 3px
+   wide, and a 17px radius on a 3px box renders as a distorted notch
+   that reads as "the lines don't match the corner". */
+html.gs-narrow-list tr.zA { border-radius: var(--gs-radius) !important; }
+html.gs-narrow-list tr.zA > td { border-radius: 0 !important; }
+
+/* subject dark, snippet quiet — the Simplify contrast */
+html.gs-narrow-list tr.zA .y2 { opacity: .55 !important; }
+
+/* ---- Unread vs read rows ----------------------------------------
+   Root cause of "unread blends into the canvas": Gmail gives unread
+   rows (tr.zA.zE) background rgba(0,0,0,0) — fully transparent — so
+   the canvas shows straight through. Read rows (tr.zA.yO) get a real
+   color. Both now get explicit backgrounds.
+   Skipped in dark themes, where these light values would be wrong. */
+
+html.gs-row-colors:not(.gs-dark) tr.zA.zE { background-color: var(--gs-row-unread) !important; }
+html.gs-row-colors:not(.gs-dark) tr.zA.yO { background-color: var(--gs-row-read) !important; }
+html.gs-row-colors.gs-dark tr.zA.zE { background-color: #22242a !important; }
+html.gs-row-colors.gs-dark tr.zA.yO { background-color: #17181a !important; }
+
+/* The cells must stay transparent. If they carry their own background,
+   their square edges paint on top of the row's rounded corners and the
+   radius appears clipped off. Paint the row, not the cells. */
+html.gs-row-colors tr.zA > td { background-color: transparent !important; }
+
+/* Accent stripe on the ROW, so the inset shadow follows the border
+   radius and curves with the corner instead of cutting across it. */
+html.gs-unread-bar tr.zA.zE {
+  box-shadow: inset 3px 0 0 var(--gs-accent) !important;
+}
+
+/* ---- Injected date headers --------------------------------------
+   content.js inserts <tr data-gs-hdr> before the first row of each
+   group. The row is display:block because Gmail's list rows are flex
+   and a normal table-row would not lay out correctly here. */
+
+html.gs-date-headers tr[data-gs-hdr] {
+  display: block !important;
+  background: transparent !important;
+  border: 0 !important;
+}
+html.gs-date-headers tr[data-gs-hdr] > td {
+  display: block !important;
+  border: 0 !important;
+  background: transparent !important;
+  padding: 18px 0 6px 14px !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  letter-spacing: .09em !important;
+  text-transform: uppercase !important;
+  opacity: .45 !important;
+}
+/* first header shouldn't push the list down */
+html.gs-date-headers tr[data-gs-hdr]:first-child > td { padding-top: 4px !important; }
+
+html.gs-hide-ads tr[data-gs-ad="1"] { display: none !important; }
+
+html.gs-borderless-list .AO,
+html.gs-borderless-list .nH.bkK,
+html.gs-borderless-list .Nu.n1tfz,
+html.gs-borderless-list .aeF {
+  box-shadow: none !important;
+  border: 0 !important;
+  background-image: none !important;
+}
+html.gs-borderless-list tr.zA,
+html.gs-borderless-list tr.zA > td {
+  border-bottom: 0 !important;
+  box-shadow: none !important;
+}
+html.gs-borderless-list .ae4 { border-radius: var(--gs-radius) !important; }
+
+/* ---- Divider lines between rows ---------------------------------
+   Drawn on the ROW, not the cells: a border on each td would render
+   as separate segments and would square off the row's corners.
+
+   Adjacent-sibling selector on purpose — an injected date header
+   breaks the `tr.zA + tr.zA` match, so no line appears directly
+   under a header, which is what you want visually.
+
+   This sits after the narrow-list `border: 0` block and carries an
+   extra class, so it wins on both specificity and order. */
+
+html.gs-dividers tr.zA + tr.zA {
+  border-top: var(--gs-divider-w) solid var(--gs-divider) !important;
+}
+/* toggle off: kill Gmail's own lines too, not just ours */
+html.gs-on:not(.gs-dividers) tr.zA,
+html.gs-on:not(.gs-dividers) tr.zA > td {
+  border-top: 0 !important;
+  border-bottom: 0 !important;
+}
+
+html.gs-hide-avatars tr.zA img[src*="googleusercontent"],
+html.gs-hide-avatars td.apU + td .bA4 img,
+html.gs-hide-avatars .bxb, html.gs-hide-avatars .aQw img {
+  display: none !important;
+}
+/* …but attachment thumbnails come from the same host — keep those. */
+html.gs-hide-avatars tr.zA .brg img,
+html.gs-hide-avatars tr.zA .bzB img {
+  display: revert !important;
+}
+
+html.gs-hide-hover-actions td.bq4,
+html.gs-hide-hover-actions ul.bqY,
+html.gs-hide-hover-actions .brb {
+  display: none !important;
+}
+
+html.gs-hide-checkboxes td.PF,
+html.gs-hide-checkboxes .oZ-jC {
+  opacity: 0 !important;
+  transition: opacity .12s ease;
+}
+html.gs-hide-checkboxes tr.zA:hover td.PF,
+html.gs-hide-checkboxes tr.zA td.PF:focus-within,
+html.gs-hide-checkboxes tr.zA.x7 td.PF {
+  opacity: 1 !important;
+}
+
+html.gs-hide-cat-icons .aKS, html.gs-hide-cat-icons .ar.as > .at,
+html.gs-hide-cat-icons .yi { display: none !important; }
+
+html.gs-hide-importance td.WA, html.gs-hide-importance .pG,
+html.gs-hide-importance .aqJ { display: none !important; }
+
+/* Density -----------------------------------------------------------
+   Padding only — never a fixed `height` on tr.zA.
+
+   Gmail renders attachment chips as a SECOND LINE INSIDE the same row,
+   so those rows are legitimately taller than plain ones. Pinning every
+   row to one height clamps them and the chips spill over the row below,
+   which reads as emails overlapping each other.
+
+   Padding gives the same density and still lets tall rows grow.        */
+
+html.gs-on tr.zA { height: auto !important; }
+
+html.gs-density-compact tr.zA > td     { padding-top: 2px  !important; padding-bottom: 2px  !important; }
+html.gs-density-cozy tr.zA > td        { padding-top: 6px  !important; padding-bottom: 6px  !important; }
+html.gs-density-comfortable tr.zA > td { padding-top: 12px !important; padding-bottom: 12px !important; }
+
+/* Attachment-chip strip: let it flow on its own line inside the row
+   rather than being positioned over the next one. */
+html.gs-on tr.zA .brg,
+html.gs-on tr.zA .bzB {
+  max-width: 100% !important;
+  flex-wrap: wrap !important;
+}
+
+/* ============ READING ============================================== */
+
+/* ---- Floating message cards (the Simplify look) -------------------
+   Each message in a thread becomes its own rounded card, separated by
+   a gap, centered on a tinted canvas. Surface colors follow whichever
+   theme Gmail is in — content.js sets .gs-dark by sampling luminance. */
+
+html.gs-card-pane {
+  --gs-canvas: var(--gs-canvas-light, #f1f3f4);
+  --gs-surface: #ffffff;
+  --gs-card-radius: calc(var(--gs-radius) + 4px);
+}
+html.gs-card-pane.gs-dark  { --gs-canvas: #16181a; --gs-surface: #202124; }
+html.gs-card-pane.gs-oled-dark { --gs-canvas: #000000; --gs-surface: #0e0e0f; }
+
+/* the canvas behind the thread */
+/* .Tm.aeJ is the actual thread scroll container and .nH.a98.iY.aHo the
+   block holding subject + messages + reply — both confirmed live. They
+   are what leaves an untinted gap below the cards if missed.
+   Background only: never touch their display/overflow. */
+html.gs-card-pane .Tm.aeJ,
+html.gs-card-pane .nH.a98.iY.aHo,
+html.gs-card-pane .nH.if,
+html.gs-card-pane .nH.hx,
+html.gs-card-pane .aeF,
+html.gs-card-pane .Bs.nH.iY,
+html.gs-card-pane .Bu.y3 {
+  background: var(--gs-canvas) !important;
+}
+html.gs-card-pane .nH.if { padding-bottom: 28px !important; }
+
+/* subject line rides on the canvas, not on a card */
+html.gs-card-pane .ha {
+  max-width: var(--gs-pane) !important;
+  margin: 0 auto !important;
+  padding: 20px 26px 12px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* one card per message.
+   border-box is required: Gmail's own padding on this element is wide
+   enough that a content-box max-width of 900 rendered at 1012, which
+   made the reply bar and the cards visibly different widths. */
+html.gs-card-pane .adn.ads {
+  max-width: var(--gs-pane) !important;
+  margin: 0 auto var(--gs-gap) !important;
+  padding: 18px 26px !important;
+  background: var(--gs-surface) !important;
+  border: 0 !important;
+  border-radius: var(--gs-card-radius) !important;
+  box-sizing: border-box !important;
+}
+
+/* kill Gmail's own inner frames so they don't double up on the card */
+html.gs-card-pane .adn.ads > .gs,
+html.gs-card-pane .gA, html.gs-card-pane .gt,
+html.gs-card-pane .adn.ads .iw {
+  border: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+/* the reply / forward box gets matching card treatment */
+html.gs-card-pane .ip.iq,
+html.gs-card-pane .amn,
+html.gs-card-pane .aDh {
+  max-width: var(--gs-pane) !important;
+  margin: 0 auto var(--gs-gap) !important;
+  padding: 10px 26px !important;
+  background: var(--gs-surface) !important;
+  border: 0 !important;
+  border-radius: var(--gs-card-radius) !important;
+}
+
+/* collapsed messages in a long thread — same card, tighter */
+html.gs-card-pane .kv, html.gs-card-pane .kQ {
+  padding-top: 10px !important;
+  padding-bottom: 10px !important;
+}
+
+/* shadow depth ----------------------------------------------------
+   The numbers come from content.js so the depth slider can scale them
+   continuously; `flat` resolves them all to 0 and uses a border. */
+
+html.gs-card-pane.gs-card-flat .adn.ads,
+html.gs-card-pane.gs-card-flat [data-gs="reply-block"] {
+  box-shadow: none !important;
+  border: 1px solid rgba(128, 128, 128, .22) !important;
+}
+
+html.gs-card-pane.gs-card-soft .adn.ads,
+html.gs-card-pane.gs-card-soft [data-gs="reply-block"],
+html.gs-card-pane.gs-card-raised .adn.ads,
+html.gs-card-pane.gs-card-raised [data-gs="reply-block"] {
+  box-shadow:
+    0 var(--gs-sh-y1) var(--gs-sh-b1) rgba(0, 0, 0, var(--gs-sh-a1)),
+    0 var(--gs-sh-y2) var(--gs-sh-b2) rgba(0, 0, 0, var(--gs-sh-a2)) !important;
+}
+
+/* On a dark canvas a black shadow is invisible — deepen it so the
+   cards still read as lifted. */
+html.gs-card-pane.gs-dark.gs-card-soft .adn.ads,
+html.gs-card-pane.gs-dark.gs-card-raised .adn.ads,
+html.gs-card-pane.gs-dark.gs-card-soft [data-gs="reply-block"],
+html.gs-card-pane.gs-dark.gs-card-raised [data-gs="reply-block"] {
+  box-shadow:
+    0 var(--gs-sh-y1) var(--gs-sh-b1) rgba(0, 0, 0, calc(var(--gs-sh-a1) * 2.2)),
+    0 var(--gs-sh-y2) var(--gs-sh-b2) rgba(0, 0, 0, calc(var(--gs-sh-a2) * 2.2)) !important;
+}
+
+/* ---- Newest message first ---------------------------------------
+   div.bh holds every message node in the thread (.kv / .kQ collapsed,
+   .h7 expanded) as direct children, in oldest-to-newest order.
+
+   Confirmed live that it is NOT a scroll container and the reply bar
+   lives outside it, so column-reverse here is safe — unlike the earlier
+   flex attempt that collapsed the thread scroller.                   */
+
+html.gs-newest-first div.bh {
+  display: flex !important;
+  flex-direction: column-reverse !important;
+}
+
+/* ---- plain centering (works with or without cards) --------------- */
+
+html.gs-center-pane .adn.ads,
+html.gs-center-pane .gs .ii.gt,
+html.gs-center-pane .a3s.aiL,
+html.gs-center-pane .nH.if > .nH .h7 {
+  max-width: var(--gs-pane) !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+html.gs-center-pane .ha h2, html.gs-center-pane .hP {
+  max-width: var(--gs-pane) !important;
+  margin: 0 auto !important;
+}
+
+/* ---- Reply block above the thread -------------------------------
+   content.js moves the reply wrapper to be the first child of the
+   container holding the messages, and tags it [data-gs="reply-block"].
+
+   Deliberately NO `display:flex` on that container. An earlier version
+   reordered with flex `order`, which killed thread scrolling: that
+   ancestor is frequently the scroll container itself, and flexing it
+   collapses its overflow. Moving the node with insertBefore leaves
+   block layout — and therefore scrolling — completely intact.        */
+
+html.gs-reply-top [data-gs="reply-block"] {
+  margin-bottom: var(--gs-gap, 12px) !important;
+}
+
+/* Width: match the message cards, or use the slider when that's off.
+   The reply block spans the full pane by default, which looks wrong
+   next to a narrower card. */
+html.gs-reply-top [data-gs="reply-block"] {
+  max-width: var(--gs-reply) !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  box-sizing: border-box !important;
+}
+html.gs-reply-match-card [data-gs="reply-block"] {
+  max-width: var(--gs-pane) !important;
+}
+/* the inner white bar should fill whatever width we settled on */
+html.gs-reply-top [data-gs="reply-block"] > * { max-width: 100% !important; }
+
+/* the Reply / Reply all / Forward row inside it, laid out horizontally */
+html.gs-reply-top [data-gs="reply-block"] .amn,
+html.gs-reply-top [data-gs="reply-block"] .btb {
+  display: flex !important;
+  gap: 8px !important;
+  flex-wrap: wrap !important;
+  padding: 4px 0 !important;
+}
+
+/* pinned variant */
+html.gs-reply-sticky [data-gs="reply-block"] {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 6 !important;
+  background: var(--gs-surface, Canvas) !important;
+}
+html.gs-reply-sticky.gs-card-pane [data-gs="reply-block"] {
+  border-radius: var(--gs-card-radius) !important;
+}
+
+html.gs-simple-reply .amn .aDh,
+html.gs-simple-reply .ip.iq,
+html.gs-simple-reply .ams {
+  box-shadow: none !important;
+  border-radius: var(--gs-radius) !important;
+}
+html.gs-simple-reply .ams.bkH, html.gs-simple-reply .ams.bkG {
+  background: var(--gs-accent) !important;
+  color: #fff !important;
+  border: 0 !important;
+}
+
+html.gs-hide-print-popout [data-gs="msg-actions"],
+html.gs-hide-print-popout [aria-label="Print all"],
+html.gs-hide-print-popout [aria-label="In new window"] {
+  display: none !important;
+}
+
+/* ============ LOOK ================================================= */
+
+/* Accent ----------------------------------------------------------- */
+html.gs-accent-buttons [data-gs="compose"],
+html.gs-accent-buttons .T-I.T-I-KE.L3 {
+  background: var(--gs-accent) !important;
+  color: #fff !important;
+  box-shadow: none !important;
+  border: 0 !important;
+  border-radius: var(--gs-radius) !important;
+}
+html.gs-accent-buttons [data-gs="compose"] .T-I-J3,
+html.gs-accent-buttons .T-I.T-I-KE.L3 .T-I-J3 { filter: brightness(4); }
+
+html.gs-accent-buttons tr.zA:hover {
+  background: color-mix(in srgb, var(--gs-accent) 7%, transparent) !important;
+  box-shadow: none !important;
+}
+html.gs-accent-buttons tr.zE .bog,
+html.gs-accent-buttons tr.zE .y6 span[id] {
+  color: var(--gs-accent) !important;
+  font-weight: 700 !important;
+}
+html.gs-accent-buttons .aim.ain,             /* selected nav item */
+html.gs-accent-buttons .TO.nZ .nU {
+  color: var(--gs-accent) !important;
+}
+html.gs-accent-buttons .TO.nZ {
+  background: color-mix(in srgb, var(--gs-accent) 12%, transparent) !important;
+  border-radius: 0 var(--gs-radius) var(--gs-radius) 0 !important;
+}
+html.gs-accent-buttons .a3s a { color: var(--gs-accent) !important; }
+
+/* Typography ------------------------------------------------------- */
+html.gs-custom-font body,
+html.gs-custom-font .zA, html.gs-custom-font .y6, html.gs-custom-font .y2,
+html.gs-custom-font .bog, html.gs-custom-font .yW, html.gs-custom-font .yP,
+html.gs-custom-font .hP, html.gs-custom-font .gD, html.gs-custom-font .g3,
+html.gs-custom-font .a3s, html.gs-custom-font .aYF, html.gs-custom-font .n0,
+html.gs-custom-font .TO, html.gs-custom-font .nU, html.gs-custom-font .aim {
+  font-family: var(--gs-font) !important;
+}
+html.gs-on .zA, html.gs-on .y6, html.gs-on .y2, html.gs-on .bog,
+html.gs-on .yW span, html.gs-on .a3s {
+  font-size: var(--gs-size) !important;
+}
+
+/* Rounded ---------------------------------------------------------- */
+html.gs-rounded .AO, html.gs-rounded .aeF, html.gs-rounded .ae4,
+html.gs-rounded .nH.bkK, html.gs-rounded .adn.ads, html.gs-rounded .T-I,
+html.gs-rounded .J-M, html.gs-rounded .b7.J-M {
+  border-radius: var(--gs-radius) !important;
+}
+
+/* Deep black (pairs with Gmail's own dark theme) -------------------- */
+html.gs-oled-dark body,
+html.gs-oled-dark .nH, html.gs-oled-dark .aeF, html.gs-oled-dark .AO,
+html.gs-oled-dark .bkK, html.gs-oled-dark .no, html.gs-oled-dark .aeN,
+html.gs-oled-dark tr.zA, html.gs-oled-dark tr.zA > td,
+html.gs-oled-dark .adn.ads {
+  background-color: #000 !important;
+}
+html.gs-oled-dark tr.zA:hover {
+  background-color: color-mix(in srgb, var(--gs-accent) 16%, #000) !important;
+}

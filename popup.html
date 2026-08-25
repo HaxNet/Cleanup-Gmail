@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+
+  <header class="top">
+    <div class="brand">
+      <span class="dot"></span>
+      <div>
+        <h1>Cleanup Gmail</h1>
+        <p id="status">Active on mail.google.com</p>
+      </div>
+    </div>
+    <label class="master">
+      <input type="checkbox" id="enabled">
+      <span class="track"><span class="thumb"></span></span>
+    </label>
+  </header>
+
+  <main>
+    <section class="card">
+      <h2>Accent</h2>
+      <div id="swatches" class="swatches"></div>
+      <div class="row">
+        <label for="accent">Custom</label>
+        <input type="color" id="accent">
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Type &amp; spacing</h2>
+      <div class="row">
+        <label for="font">Font</label>
+        <select id="font"></select>
+      </div>
+      <div class="row">
+        <label for="fontSize">Text size</label>
+        <input type="range" id="fontSize" min="11" max="19" step="1">
+        <output id="fontSizeOut"></output>
+      </div>
+      <div class="row">
+        <label>Row density</label>
+        <div class="seg" data-key="density">
+          <button data-v="comfortable">Roomy</button>
+          <button data-v="cozy">Cozy</button>
+          <button data-v="compact">Tight</button>
+        </div>
+      </div>
+      <div class="row">
+        <label for="listWidth">Inbox list width</label>
+        <input type="range" id="listWidth" min="700" max="1600" step="20">
+        <output id="listWidthOut"></output>
+      </div>
+      <div class="row">
+        <label for="radius">Corner radius</label>
+        <input type="range" id="radius" min="0" max="20" step="1">
+        <output id="radiusOut"></output>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Reading pane</h2>
+      <div class="row">
+        <label for="paneWidth">Card width</label>
+        <input type="range" id="paneWidth" min="640" max="1400" step="20">
+        <output id="paneWidthOut"></output>
+      </div>
+      <div class="row">
+        <label for="cardGap">Gap between messages</label>
+        <input type="range" id="cardGap" min="0" max="32" step="2">
+        <output id="cardGapOut"></output>
+      </div>
+      <div class="row">
+        <label>Card depth</label>
+        <div class="seg" data-key="cardStyle">
+          <button data-v="flat">Flat</button>
+          <button data-v="soft">Soft</button>
+          <button data-v="raised">Raised</button>
+        </div>
+      </div>
+      <div class="row">
+        <label for="shadowDepth">Shadow depth</label>
+        <input type="range" id="shadowDepth" min="0" max="100" step="5">
+        <output id="shadowDepthOut"></output>
+      </div>
+      <div class="row">
+        <label for="canvas">Canvas behind cards</label>
+        <input type="color" id="canvas">
+      </div>
+      <div class="row">
+        <label for="replyWidth">Reply bar width</label>
+        <input type="range" id="replyWidth" min="400" max="1600" step="20">
+        <output id="replyWidthOut"></output>
+      </div>
+      <p class="hint">Reply width only applies when “Reply bar matches card width” is off.</p>
+      <p class="hint">Cards need “Float messages as cards” on (Reading section below).
+        Canvas applies in light mode; dark themes get a matching dark canvas automatically.</p>
+    </section>
+
+    <section class="card">
+      <h2>Row colors</h2>
+      <div class="row">
+        <label for="rowUnread">Unread row</label>
+        <input type="color" id="rowUnread">
+      </div>
+      <div class="row">
+        <label for="rowRead">Read row</label>
+        <input type="color" id="rowRead">
+      </div>
+      <div class="row">
+        <label for="divider">Line between rows</label>
+        <input type="color" id="divider">
+      </div>
+      <div class="row">
+        <label for="dividerSize">Line thickness</label>
+        <input type="range" id="dividerSize" min="0" max="3" step="1">
+        <output id="dividerSizeOut"></output>
+      </div>
+      <p class="hint">Gmail leaves unread rows transparent, so they take on the
+        canvas color. These override both. Set thickness to 0 for no lines.
+        Row colors are ignored in dark themes.</p>
+    </section>
+
+    <div id="groups"></div>
+
+    <section class="card">
+      <h2>Backup &amp; transfer</h2>
+      <div class="btnrow">
+        <button id="copyBtn" class="ghost">Copy settings</button>
+        <button id="fileBtn" class="ghost">Download .json</button>
+      </div>
+      <input type="file" id="fileInput" accept="application/json,.json" hidden>
+      <div id="dropZone">
+        <textarea id="importBox" spellcheck="false"
+          placeholder="Drop your .json file here, or paste settings and press Import"></textarea>
+      </div>
+      <div class="btnrow">
+        <button id="importBtn" class="ghost">Import</button>
+        <button id="pickBtn" class="ghost">Choose file…</button>
+        <span class="note" id="ioMsg"></span>
+      </div>
+      <p class="hint">Dragging the file onto the box is the most reliable —
+        a file dialog can close this popup. If it does,
+        <a href="#" id="openTab">open this panel in a tab</a> and use Choose file there.</p>
+    </section>
+
+    <section class="card">
+      <details>
+        <summary>Advanced — your own CSS</summary>
+        <p class="hint">Injected into Gmail after everything else. Use it to hide
+          anything this panel misses: right-click the element in Gmail →
+          Inspect → copy its class → <code>.thatClass { display:none !important }</code></p>
+        <textarea id="customCss" spellcheck="false" placeholder="/* .someClass { display: none !important; } */"></textarea>
+      </details>
+    </section>
+
+    <div class="footer">
+      <button id="reset" class="ghost">Reset to defaults</button>
+      <span class="saved" id="saved">Saved</span>
+    </div>
+  </main>
+
+  <script src="defaults.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
