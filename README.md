@@ -210,3 +210,32 @@ Bug reports and pull requests welcome via [Issues](https://github.com/HaxNet/Cle
 MIT — see [LICENSE](LICENSE). Do what you like with it.
 
 Not affiliated with, endorsed by, or connected to Google. Gmail is a trademark of Google LLC.
+
+---
+
+## Changelog
+
+### v1.3.6
+- **Movable compose windows** — drag any compose window, expanded or minimized, by its title bar. Double-click the title bar to snap it back to Gmail's corner. Each window drags independently. New toggle in Reading, on by default; positions reset on reload.
+
+### v1.3.5
+- Compose footer (Send + formatting toolbar) now sits inside its holder instead of ~93px too low — Gmail pins it with a hardcoded pixel offset that lands below the reserved space.
+- Footer spans the full compose width, aligned with the From/To/Subject rows, instead of being centered 144px off.
+- Reserved the scrollbar gutter on the compose body, so focusing To/From can no longer raise a scrollbar that shifts the whole layout 15px.
+
+### v1.2.9
+- Compose card rounds the top corners only. Gmail's footer overflows its own dialog, so rounding all four corners drew the card edge above the Send row.
+
+### v1.2.5
+- Card styling no longer leaks into the pop-out compose window. An unscoped rule padded the compose footer, which overflowed the body, raised a scrollbar and narrowed every row 15px — the To/From misalignment.
+
+### v1.2.4
+- Experimental **Blend add-on toolbars** toggle (Boomerang, Mailtrack, Streak), off by default.
+- Added `tools/report-addon-dom.js`, a diagnostic users can run to report add-on layout issues. Collects element structure only, never message content.
+
+### v1.2.2
+- Compose box aligned to the card edge — neutralized Gmail's 8px scrollbar compensation on the body wrapper.
+- Collapsed messages in a thread match the card width and follow the width slider.
+
+### v1.0.0
+- Initial release: 30+ toggles across Chrome, List, Reading and Look; floating message cards; reply at top; newest-first threads; quick filters; date headers; import/export; live preview.
