@@ -63,6 +63,24 @@ h1 { font-size: 14px; margin: 0; font-weight: 650; letter-spacing: -.01em; }
 .master input:checked + .track { background: var(--accent); }
 .master input:checked + .track .thumb { transform: translateX(17px); }
 
+/* settings search -------------------------------------------------- */
+.searchwrap {
+  position: sticky; top: 63px;    /* sits under the sticky header */
+  z-index: 4;
+  background: var(--bg);
+  padding: 2px 0 6px;
+}
+#optSearch {
+  width: 100%;
+  padding: 7px 10px;
+  font: inherit;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--field);
+  color: var(--fg);
+}
+#optSearch:focus { outline: none; border-color: var(--accent); }
+
 /* cards ----------------------------------------------------------- */
 main { padding: 12px; display: flex; flex-direction: column; gap: 10px; }
 .card {

@@ -434,6 +434,50 @@
     });
   }
 
+  /* ---------- settings search --------------------------------------
+     Filters every card by text: a row shows if its label or hint
+     matches; a section-name match shows the whole section. Purely
+     visual — hidden controls keep their state and handlers.         */
+
+  function applySearch() {
+    const inp = $('optSearch');
+    if (!inp) return;
+    const q = inp.value.trim().toLowerCase();
+
+    document.querySelectorAll('main .card').forEach(card => {
+      const h2 = card.querySelector('h2');
+      const headHit = h2 && h2.textContent.toLowerCase().includes(q);
+      let any = false;
+
+      card.querySelectorAll('.toggle, .row').forEach(el => {
+        const hit = !q || headHit || el.textContent.toLowerCase().includes(q);
+        el.style.display = hit ? '' : 'none';
+        if (hit) any = true;
+      });
+      // hint paragraphs follow their card, not the query
+      card.querySelectorAll('p.hint').forEach(p => {
+        p.style.display = (!q || headHit) ? '' : 'none';
+      });
+
+      card.style.display = (!q || any || headHit) ? '' : 'none';
+    });
+  }
+
+  function wireSearch() {
+    const inp = $('optSearch');
+    if (!inp) return;
+    inp.addEventListener('input', applySearch);
+    // Esc clears rather than closing the popup
+    inp.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && inp.value) {
+        e.preventDefault();
+        e.stopPropagation();
+        inp.value = '';
+        applySearch();
+      }
+    });
+  }
+
   /* ---------- boot ------------------------------------------------ */
 
   // Rendered wider when opened as a full tab (see the Choose file note).
@@ -446,5 +490,6 @@
     paintAll();
     wire();
     wireIO();
+    wireSearch();
   });
 })();

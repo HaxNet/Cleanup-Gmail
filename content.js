@@ -642,6 +642,7 @@
     if (settings['reply-top']) placeReplyTop();
     if (settings['reply-sticky']) tagThreadScroller();
     if (settings['blend-addons']) tagAddonRows();
+    if (settings['center-compose']) centerComposes();
     if (settings['date-headers']) dateHeaders();
     if (settings['quick-filters']) quickFilters();
     detectDark(false);
@@ -700,6 +701,41 @@
        hatch if Gmail and the offset ever disagree.
      - Offset lives for the session only; a reload heals everything. */
 
+  /* ---------- centre compose windows -------------------------------
+     Same mechanism as dragging: translate the per-window div.AD
+     container, leaving Gmail's own layout numbers untouched.
+
+     Re-centres when the window's HEIGHT changes (minimise <-> restore
+     swaps a ~40px strip for a ~620px window — keeping the old offset
+     would fling the restored window off-screen). Stops permanently for
+     any window the user has dragged: their placement wins. Offsets are
+     clamped so the title bar can never end up above the viewport.    */
+
+  function centerComposes() {
+    document.querySelectorAll('div.AD').forEach(dock => {
+      if (dock.dataset.gsUserMoved) return;
+      if (!dock.querySelector('div.nH.Hd')) return;
+      const r = dock.getBoundingClientRect();
+      if (r.width < 150 || r.height < 24) return;         // not laid out yet
+      const h = Math.round(r.height);
+      if (dock.dataset.gsCenteredH === String(h)) return; // converged at this size
+
+      const m = /translate\((-?[\d.]+)px,\s*(-?[\d.]+)px\)/.exec(dock.style.transform || '');
+      const bx = m ? parseFloat(m[1]) : 0;
+      const by = m ? parseFloat(m[2]) : 0;
+      const natLeft = r.left - bx;                        // Gmail's own position
+      const natTop  = r.top  - by;
+
+      let dx = (window.innerWidth  - r.width)  / 2 - natLeft;
+      let dy = (window.innerHeight - r.height) / 2 - natTop;
+      if (natTop  + dy < 8) dy = 8 - natTop;              // keep the title bar reachable
+      if (natLeft + dx < 8) dx = 8 - natLeft;
+
+      dock.style.transform = 'translate(' + Math.round(dx) + 'px, ' + Math.round(dy) + 'px)';
+      dock.dataset.gsCenteredH = String(h);
+    });
+  }
+
   let dragState = null;
 
   function composeDock(el) {
@@ -754,6 +790,8 @@
         // swallow exactly one click so ending the drag can't minimise
         const stop = ev => { ev.stopPropagation(); ev.preventDefault(); };
         document.addEventListener('click', stop, { capture: true, once: true });
+        // user placement wins from here on — auto-centre stands down
+        dragState.dock.dataset.gsUserMoved = '1';
       }
       dragState = null;
     }, true);
@@ -763,7 +801,11 @@
       const bar = e.target.closest && e.target.closest(DRAG_HANDLE);
       if (!bar) return;
       const dock = composeDock(bar);
-      if (dock) dock.style.transform = '';
+      if (dock) {
+        dock.style.transform = '';
+        // snap-back means "give me Gmail's corner" — don't re-centre it
+        dock.dataset.gsUserMoved = '1';
+      }
     }, true);
   }
 

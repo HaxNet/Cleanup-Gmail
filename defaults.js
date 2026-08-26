@@ -42,6 +42,7 @@ const GS_TOGGLES = [
   { key: 'simple-reply',       group: 'Reading',  label: 'Simplify reply bar',          hint: 'Quieter Reply / Forward controls',         on: true  },
   { key: 'blend-addons',       group: 'Reading',  label: 'Blend add-on toolbars',       hint: 'Boomerang, Mailtrack, Streak — experimental', on: false },
   { key: 'drag-compose',       group: 'Reading',  label: 'Movable compose windows',     hint: 'Drag the title bar; double-click it to snap back', on: true },
+  { key: 'center-compose',     group: 'Reading',  label: 'Open compose centered',       hint: 'New windows open mid-screen instead of bottom right', on: true },
   { key: 'hide-print-popout',  group: 'Reading',  label: 'Hide print / pop-out icons',  hint: 'Top-right of an open message',             on: false },
 
   // --- Look ------------------------------------------------------------

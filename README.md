@@ -215,6 +215,10 @@ Not affiliated with, endorsed by, or connected to Google. Gmail is a trademark o
 
 ## Changelog
 
+### v1.3.7
+- **Open compose centered** — new compose windows open mid-screen instead of Gmail's bottom-right corner, and re-center when minimizing or restoring changes their size. Dragging a window turns auto-centering off for that window; double-clicking the title bar returns it to Gmail's corner. New toggle in Reading, on by default.
+- **Settings search** — a search box at the top of the popup filters every section and toggle by name or description, so no more scrolling to find an option. Esc clears the search.
+
 ### v1.3.6
 - **Movable compose windows** — drag any compose window, expanded or minimized, by its title bar. Double-click the title bar to snap it back to Gmail's corner. Each window drags independently. New toggle in Reading, on by default; positions reset on reload.
 
