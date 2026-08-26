@@ -199,6 +199,8 @@
     $('replyWidthOut').textContent  = S.replyWidth + 'px';
     $('dividerSizeOut').textContent = S.dividerSize + 'px';
     $('shadowDepthOut').textContent = S.shadowDepth + '%';
+    $('composeRadiusOut').textContent = S.composeRadius + 'px';
+    $('composeBorderWOut').textContent = S.composeBorderW + 'px';
 
     // every segmented control declares which setting it drives
     document.querySelectorAll('.seg[data-key]').forEach(seg => {
@@ -223,6 +225,9 @@
     $('divider').value     = S.divider;
     $('dividerSize').value = S.dividerSize;
     $('shadowDepth').value = S.shadowDepth;
+    $('composeRadius').value = S.composeRadius;
+    $('composeBorderW').value = S.composeBorderW;
+    $('composeBorderC').value = S.composeBorderC;
     $('customCss').value   = S.customCss || '';
     buildFonts();
     buildSwatches();
@@ -246,11 +251,12 @@
     $('rowUnread').addEventListener('input', e => set('rowUnread', e.target.value, 'continuous'));
     $('rowRead').addEventListener('input', e => set('rowRead', e.target.value, 'continuous'));
     $('divider').addEventListener('input', e => set('divider', e.target.value, 'continuous'));
+    $('composeBorderC').addEventListener('input', e => set('composeBorderC', e.target.value, 'continuous'));
     $('font').addEventListener('change', e => set('font', e.target.value, 'discrete'));
 
     // sliders: the big offenders
     ['fontSize', 'paneWidth', 'radius', 'cardGap', 'listWidth', 'replyWidth',
-     'dividerSize', 'shadowDepth'].forEach(key => {
+     'dividerSize', 'shadowDepth', 'composeRadius', 'composeBorderW'].forEach(key => {
       $(key).addEventListener('input', e => set(key, Number(e.target.value), 'continuous'));
     });
 

@@ -99,6 +99,20 @@
         <input type="range" id="replyWidth" min="400" max="1600" step="20">
         <output id="replyWidthOut"></output>
       </div>
+      <div class="row">
+        <label for="composeRadius">Compose corner radius</label>
+        <input type="range" id="composeRadius" min="0" max="24" step="1">
+        <output id="composeRadiusOut"></output>
+      </div>
+      <div class="row">
+        <label for="composeBorderW">Compose edge line</label>
+        <input type="range" id="composeBorderW" min="0" max="4" step="1">
+        <output id="composeBorderWOut"></output>
+      </div>
+      <div class="row">
+        <label for="composeBorderC">Edge line color</label>
+        <input type="color" id="composeBorderC">
+      </div>
       <p class="hint">Reply width only applies when “Reply bar matches card width” is off.</p>
       <p class="hint">Cards need “Float messages as cards” on (Reading section below).
         Canvas applies in light mode; dark themes get a matching dark canvas automatically.</p>

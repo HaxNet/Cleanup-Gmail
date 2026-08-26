@@ -215,6 +215,14 @@ Not affiliated with, endorsed by, or connected to Google. Gmail is a trademark o
 
 ## Changelog
 
+### v1.3.8
+- **Resizable compose windows** — drag the striped grip at the window's bottom-right corner. The grip is injected above the dialog because the native CSS resize handle is fully occluded by Gmail's compose surface and never receives the click. A resize observer keeps the body height in step with the window, since Gmail pins it at a fixed pixel height. Minimum size 480×480, below which the footer escapes containment.
+- **Card-style compose window** — rounded corners, a thin border, and the card shadow on New Message. Assembled per edge (top corners on the dialog, bottom corners on the footer, border and shadow on the container) because clipping the dialog still cuts off Gmail's overflowing internals.
+- **Compose corner radius slider** (0–24px) in the Reading pane section controls how rounded the compose card is, independent of the thread-card radius.
+- **Compose edge line controls** — thickness slider (0–4px, 0 = none) and a color picker. The line is drawn as an overlay inside the dialog: a border is painted over by the clipped window, and an outline is erased by Gmail's own ancestor overflow clip, so an inner overlay is the only placement that survives.
+- Fixed: the resize grip is parented to the dialog — positioned children of Gmail's window container never receive clicks (found empirically; z-index and pointer-events both ruled out).
+- Fixed: the 480px minimum size no longer applies to the minimized strip, which it was inflating into a square box.
+
 ### v1.3.7
 - **Open compose centered** — new compose windows open mid-screen instead of Gmail's bottom-right corner, and re-center when minimizing or restoring changes their size. Dragging a window turns auto-centering off for that window; double-clicking the title bar returns it to Gmail's corner. New toggle in Reading, on by default.
 - **Settings search** — a search box at the top of the popup filters every section and toggle by name or description, so no more scrolling to find an option. Esc clears the search.

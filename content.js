@@ -46,6 +46,9 @@
     st.setProperty('--gs-row-read', settings.rowRead);
     st.setProperty('--gs-divider', settings.divider);
     st.setProperty('--gs-divider-w', settings.dividerSize + 'px');
+    st.setProperty('--gs-compose-radius', settings.composeRadius + 'px');
+    st.setProperty('--gs-compose-border-w', settings.composeBorderW + 'px');
+    st.setProperty('--gs-compose-border-c', settings.composeBorderC);
 
     /* Card shadow.
        Computed here rather than as fixed CSS presets so the depth
@@ -643,6 +646,8 @@
     if (settings['reply-sticky']) tagThreadScroller();
     if (settings['blend-addons']) tagAddonRows();
     if (settings['center-compose']) centerComposes();
+    if (settings['resize-compose']) tagResizableComposes();
+    if (settings['card-compose']) tagComposeEdges();
     if (settings['date-headers']) dateHeaders();
     if (settings['quick-filters']) quickFilters();
     detectDark(false);
@@ -733,6 +738,107 @@
 
       dock.style.transform = 'translate(' + Math.round(dx) + 'px, ' + Math.round(dy) + 'px)';
       dock.dataset.gsCenteredH = String(h);
+    });
+  }
+
+  /* ---------- resizable compose windows ----------------------------
+     CSS `resize` on div.AD supplies the drag handle, and width flows
+     through on its own (Gmail's inner tables are width:100%). Height
+     does NOT: Gmail pins the body wrapper .aoI at an inline pixel
+     height, so a taller window would leave dead space and the footer
+     adrift — measured 98px adrift. This observer keeps .aoI in step:
+     body height = window height minus the fixed chrome around it.
+     Verified live: grow to 780x720 tracks exactly, footer inside,
+     editor intact. Below ~480px containment breaks, hence the CSS
+     min-width/min-height floor.                                     */
+
+  /* `var`, not `let`, and it matters: apply(GS_DEFAULTS) runs earlier
+     in the file than this declaration and reaches here via scan() ->
+     tagResizableComposes(). A `let` accessed before its declaration
+     line executes throws "Cannot access before initialization" — which
+     killed the whole content script at load. `var` hoists as undefined,
+     so the `if (!resizeObs)` below simply creates the observer. */
+  var resizeObs = null;
+
+  function tagResizableComposes() {
+    if (!resizeObs) {
+      resizeObs = new ResizeObserver(entries => {
+        if (!settings.enabled || !settings['resize-compose']) return;
+        entries.forEach(en => {
+          const AD = en.target;
+          const dlg = AD.querySelector('div.nH.Hd');
+          const aoI = dlg && dlg.querySelector('.aoI');
+          if (!aoI) return;
+          const chrome = dlg.getBoundingClientRect().height -
+                         aoI.getBoundingClientRect().height;
+          const target = Math.max(240,
+            Math.round(AD.getBoundingClientRect().height - chrome));
+          if (Math.abs((parseFloat(aoI.style.height) || 0) - target) > 2) {
+            aoI.style.height = target + 'px';
+          }
+        });
+      });
+    }
+    document.querySelectorAll('div.AD').forEach(AD => {
+      if (AD.dataset.gsResize) return;
+      if (!AD.querySelector('div.nH.Hd')) return;
+      AD.dataset.gsResize = '1';
+      resizeObs.observe(AD);
+
+      /* The grip lives on the DIALOG, not on .AD — found empirically.
+         Native CSS resize was occluded, and a grip parented to .AD
+         never appeared in elementsFromPoint at its own coordinates:
+         not a z-index or pointer-events issue (both were tested and
+         clean), positioned children of .AD simply do not hit-test.
+         Re-parenting onto div.nH.Hd (with position:relative from CSS)
+         made it clickable immediately. The resize itself still sets
+         .AD's size — that part always worked. */
+      moving = true;
+      const grip = document.createElement('div');
+      grip.className = 'gs-resize-grip';
+      AD.querySelector('div.nH.Hd').appendChild(grip);
+      setTimeout(() => { moving = false; }, 0);
+
+      grip.addEventListener('mousedown', e => {
+        if (!settings.enabled || !settings['resize-compose']) return;
+        if (e.button !== 0) return;
+        e.preventDefault();
+        e.stopPropagation();
+        const r = AD.getBoundingClientRect();
+        const sx = e.clientX, sy = e.clientY, sw = r.width, sh = r.height;
+        const onMove = ev => {
+          AD.style.width  = Math.max(480, Math.round(sw + ev.clientX - sx)) + 'px';
+          AD.style.height = Math.max(480, Math.round(sh + ev.clientY - sy)) + 'px';
+          ev.preventDefault();
+        };
+        const onUp = () => {
+          document.removeEventListener('mousemove', onMove, true);
+          document.removeEventListener('mouseup', onUp, true);
+        };
+        document.addEventListener('mousemove', onMove, true);
+        document.addEventListener('mouseup', onUp, true);
+      });
+    });
+  }
+
+  /* ---------- compose edge line ------------------------------------
+     Third attempt at this line, each burial different:
+       1. border on .AD      -> painted over by the clipped dialog
+       2. outline offset -1  -> inside the box, buried the same way
+       3. outline offset 0   -> outside the box, erased by div.dw's
+                                overflow:hidden (ancestor clip)
+     The overlay lives INSIDE the dialog, so no ancestor clip touches
+     it, and it paints above the dialog's content like the grip does.
+     pointer-events:none so it can never eat a click.                 */
+
+  function tagComposeEdges() {
+    document.querySelectorAll('div.AD div.nH.Hd').forEach(dlg => {
+      if (dlg.querySelector('.gs-compose-edge')) return;
+      moving = true;
+      const edge = document.createElement('div');
+      edge.className = 'gs-compose-edge';
+      dlg.appendChild(edge);
+      setTimeout(() => { moving = false; }, 0);
     });
   }
 

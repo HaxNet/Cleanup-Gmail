@@ -43,6 +43,8 @@ const GS_TOGGLES = [
   { key: 'blend-addons',       group: 'Reading',  label: 'Blend add-on toolbars',       hint: 'Boomerang, Mailtrack, Streak — experimental', on: false },
   { key: 'drag-compose',       group: 'Reading',  label: 'Movable compose windows',     hint: 'Drag the title bar; double-click it to snap back', on: true },
   { key: 'center-compose',     group: 'Reading',  label: 'Open compose centered',       hint: 'New windows open mid-screen instead of bottom right', on: true },
+  { key: 'resize-compose',     group: 'Reading',  label: 'Resizable compose windows',   hint: 'Drag the bottom-right corner of the window',  on: true },
+  { key: 'card-compose',       group: 'Reading',  label: 'Card-style compose window',   hint: 'Rounded corners and shadow on New Message',   on: true },
   { key: 'hide-print-popout',  group: 'Reading',  label: 'Hide print / pop-out icons',  hint: 'Top-right of an open message',             on: false },
 
   // --- Look ------------------------------------------------------------
@@ -87,6 +89,9 @@ const GS_DEFAULTS = (() => {
     radius: 12,          // px
     cardGap: 12,         // px between message cards
     cardStyle: 'raised', // flat | soft | raised
+    composeRadius: 16,   // px, corner radius of the compose card
+    composeBorderW: 1,   // px, edge line around the compose card; 0 = none
+    composeBorderC: '#b4b8bf', // edge line colour
     shadowDepth: 55,     // 0-100, scales the card shadow
     canvas: '#f1f3f4',   // page tint behind the cards (light mode)
     customCss: ''

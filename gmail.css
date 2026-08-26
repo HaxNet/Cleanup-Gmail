@@ -508,6 +508,91 @@ html.gs-drag-compose .nH.Hd.aXJ {
   cursor: move !important;
 }
 
+/* Resizable compose windows: the handle comes from CSS `resize` on the
+   per-window container; content.js keeps the body height in step (see
+   tagResizableComposes). The floor exists because containment breaks
+   below ~480px — the footer escapes the window. */
+/* No CSS `resize` — the native handle is occluded by the dialog and
+   never receives the mousedown. content.js injects .gs-resize-grip
+   onto the DIALOG (positioned children of .AD do not hit-test — found
+   empirically; z-index and pointer-events were both ruled out).
+
+   The size floor is scoped to EXPANDED windows only: applied to .AD
+   unconditionally it inflated the minimised strip into a 480px box. */
+html.gs-resize-compose div.AD:has(div.nH.Hd:not(.aXJ)) {
+  min-width: 480px !important;
+  min-height: 480px !important;
+}
+html.gs-resize-compose div.nH.Hd {
+  position: relative !important;   /* anchors the grip to the dialog corner */
+}
+html.gs-resize-compose .gs-resize-grip {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 18px;
+  height: 18px;
+  z-index: 30;
+  cursor: nwse-resize;
+  background:
+    linear-gradient(135deg, transparent 0 55%,
+      rgba(128, 128, 128, .55) 55% 62%, transparent 62% 72%,
+      rgba(128, 128, 128, .55) 72% 79%, transparent 79%);
+  border-bottom-right-radius: var(--gs-compose-radius, 16px);
+}
+/* the grip has no business on a minimised strip */
+html.gs-resize-compose div.nH.Hd.aXJ .gs-resize-grip {
+  display: none;
+}
+
+/* The compose edge line — overlay inside the dialog, immune to both
+   the container clip and div.dw's ancestor clip. Width 0 = no line. */
+html.gs-card-compose .gs-compose-edge {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 29;                       /* just under the resize grip */
+  border: var(--gs-compose-border-w, 1px) solid var(--gs-compose-border-c, #b4b8bf);
+  border-radius: var(--gs-compose-radius, 16px);
+}
+html.gs-card-compose div.nH.Hd.aXJ .gs-compose-edge {
+  border-radius: var(--gs-radius, 12px) var(--gs-radius, 12px) 0 0;
+}
+html:not(.gs-card-compose) .gs-compose-edge { display: none; }
+
+/* Card-style compose. Full rounding + clipping is still unsafe — 27
+   elements paint past the dialog bottom even with the footer flowing —
+   so the card is assembled per edge instead: top corners on the
+   dialog, bottom corners on the footer (the visual bottom edge), and
+   the shadow on the container so nothing needs clipping. */
+html.gs-card-compose div.AD {
+  border-radius: var(--gs-compose-radius, 16px) !important;
+  /* The clip is what makes the BOTTOM corners visibly round. The
+     footer's own rounded corners were white-on-white against the
+     dialog's square background, so they never showed. Clipping here is
+     safe where clipping the dialog wasn't: the container matches the
+     dialog to the pixel, the footer flows inside it since the aDj fix,
+     and the only things extending past are empty overflow. Menus and
+     autocomplete render at body level and are untouched. */
+  overflow: hidden !important;
+  /* No border/outline here — three burials taught us why: a border is
+     painted over by the clipped dialog; outline offset -1 the same;
+     outline offset 0 is erased by div.dw's ancestor overflow clip.
+     The visible edge is .gs-compose-edge, an overlay INSIDE the
+     dialog injected by content.js — see tagComposeEdges. */
+  border: 0 !important;
+  box-sizing: border-box !important;
+  box-shadow:
+    0 var(--gs-sh-y1) var(--gs-sh-b1) rgba(0, 0, 0, var(--gs-sh-a1)),
+    0 var(--gs-sh-y2) var(--gs-sh-b2) rgba(0, 0, 0, var(--gs-sh-a2)) !important;
+}
+html.gs-card-compose div.nH.Hd {
+  border-radius: var(--gs-compose-radius, 16px) var(--gs-compose-radius, 16px) 0 0 !important;
+}
+html.gs-card-compose div.nH.Hd.aXJ {
+  border-radius: var(--gs-radius, 12px) var(--gs-radius, 12px) 0 0 !important;
+}
+
 /* Let the footer FLOW inside its holder instead of being pinned.
    Gmail renders div.aDj.ahe (the wrapper around .aDh) as
    position:fixed with a hardcoded pixel top computed by its JS — and
@@ -549,6 +634,14 @@ html.gs-card-pane div.nH.Hd .aDh {
    layout stops depending on which field has focus. */
 html.gs-card-pane div.nH.Hd .aoI {
   scrollbar-gutter: stable !important;
+}
+
+/* Card compose, bottom edge: the footer is the lowest painted element,
+   so rounding its bottom corners rounds the visible card base.
+   Placed AFTER the footer rule above on purpose — equal specificity,
+   so source order is what lets this radius win. */
+html.gs-card-compose div.nH.Hd .aDh {
+  border-radius: 0 0 var(--gs-compose-radius, 16px) var(--gs-compose-radius, 16px) !important;
 }
 
 /* ---- Blend third-party add-on toolbars (experimental, off) --------
