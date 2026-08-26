@@ -681,6 +681,92 @@
     if (box) markQuickActive(box);
   });
 
+  /* ---------- draggable compose windows ----------------------------
+     Gmail pins compose windows in a fixed dock at the bottom right;
+     their positions come from Gmail's own JS, so CSS alone cannot move
+     them. Drag is done by translating the window's FIXED ancestor —
+     found at runtime, since the class names between the dialog and the
+     dock vary — which leaves Gmail's internal layout numbers untouched
+     and so gives it nothing to fight.
+
+     Design notes, each one a lesson from earlier in this project:
+     - 5px threshold before a drag starts, so a plain click on the title
+       bar still minimises/restores exactly as before.
+     - The click that follows a real drag is swallowed once, or the
+       mouseup would toggle minimise as the drag ended.
+     - Window controls (minimise / pop-out / close icons) are excluded
+       from the handle so they keep working untouched.
+     - Double-click the title bar clears the transform — the escape
+       hatch if Gmail and the offset ever disagree.
+     - Offset lives for the session only; a reload heals everything. */
+
+  let dragState = null;
+
+  function composeDock(el) {
+    // Measured live: Gmail's compose windows are NOT position:fixed.
+    // The per-window container is div.AD (absolute) inside the div.dw
+    // dock (also absolute). Looking only for `fixed` found nothing and
+    // the drag silently bailed — accept either.
+    let p = el;
+    for (let i = 0; p && i < 14; i++) {
+      const pos = getComputedStyle(p).position;
+      if (pos === 'fixed' || pos === 'absolute') return p;
+      p = p.parentElement;
+    }
+    return null;
+  }
+
+  const DRAG_HANDLE = '.nH.Hy.aXJ, .nH.Hd.aXJ';
+
+  function setupComposeDrag() {
+    document.addEventListener('mousedown', e => {
+      if (!settings.enabled || !settings['drag-compose']) return;
+      if (e.button !== 0) return;
+      const bar = e.target.closest && e.target.closest(DRAG_HANDLE);
+      if (!bar) return;
+      if (e.target.closest('img, [role="button"], button, a, input')) return;
+      const dock = composeDock(bar);
+      if (!dock) return;
+      const m = /translate\((-?[\d.]+)px,\s*(-?[\d.]+)px\)/.exec(dock.style.transform || '');
+      dragState = {
+        dock,
+        startX: e.clientX, startY: e.clientY,
+        baseX: m ? parseFloat(m[1]) : 0,
+        baseY: m ? parseFloat(m[2]) : 0,
+        moved: false
+      };
+    }, true);
+
+    document.addEventListener('mousemove', e => {
+      if (!dragState) return;
+      const dx = e.clientX - dragState.startX;
+      const dy = e.clientY - dragState.startY;
+      if (!dragState.moved && Math.hypot(dx, dy) < 5) return;
+      dragState.moved = true;
+      dragState.dock.style.transform =
+        'translate(' + (dragState.baseX + dx) + 'px, ' + (dragState.baseY + dy) + 'px)';
+      e.preventDefault();   // stops text selection while dragging
+    }, true);
+
+    document.addEventListener('mouseup', () => {
+      if (!dragState) return;
+      if (dragState.moved) {
+        // swallow exactly one click so ending the drag can't minimise
+        const stop = ev => { ev.stopPropagation(); ev.preventDefault(); };
+        document.addEventListener('click', stop, { capture: true, once: true });
+      }
+      dragState = null;
+    }, true);
+
+    document.addEventListener('dblclick', e => {
+      if (!settings.enabled || !settings['drag-compose']) return;
+      const bar = e.target.closest && e.target.closest(DRAG_HANDLE);
+      if (!bar) return;
+      const dock = composeDock(bar);
+      if (dock) dock.style.transform = '';
+    }, true);
+  }
+
   function watch() {
     new MutationObserver(scheduleScan).observe(document.body, {
       childList: true, subtree: true
@@ -690,4 +776,6 @@
 
   if (document.body) watch();
   else document.addEventListener('DOMContentLoaded', watch, { once: true });
+
+  setupComposeDrag();
 })();

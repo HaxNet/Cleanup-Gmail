@@ -501,6 +501,13 @@ html.gs-card-pane div.gA.gt .aoI {
    the vertical padding the height is unchanged, so the look comes back
    and the bug does not.                                              */
 
+/* Movable compose windows: the drag itself is JS (content.js — CSS
+   cannot reposition Gmail's fixed dock). This only signals the handle. */
+html.gs-drag-compose .nH.Hy.aXJ,
+html.gs-drag-compose .nH.Hd.aXJ {
+  cursor: move !important;
+}
+
 /* Let the footer FLOW inside its holder instead of being pinned.
    Gmail renders div.aDj.ahe (the wrapper around .aDh) as
    position:fixed with a hardcoded pixel top computed by its JS — and
