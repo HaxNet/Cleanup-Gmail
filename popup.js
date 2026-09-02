@@ -212,6 +212,7 @@
 
   function paintAll() {
     $('enabled').checked   = !!S.enabled;
+    $('kbdToggle').checked = !!S.kbdToggle;
     $('accent').value      = S.accent;
     $('canvas').value      = S.canvas;
     $('fontSize').value    = S.fontSize;
@@ -239,6 +240,7 @@
 
   function wire() {
     $('enabled').addEventListener('change', e => set('enabled', e.target.checked));
+    $('kbdToggle').addEventListener('change', e => set('kbdToggle', e.target.checked));
     // color inputs stream events while dragging → continuous
     $('accent').addEventListener('input', e => {
       S.accent = e.target.value;

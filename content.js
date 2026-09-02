@@ -536,11 +536,18 @@
     const yesterday = new Date(t); yesterday.setDate(t.getDate() - 1);
     const thisMonth = new Date(t.getFullYear(), t.getMonth(), 1);
     const lastMonth = new Date(t.getFullYear(), t.getMonth() - 1, 1);
+    // "Last week" mirrors "Last month": the previous CALENDAR week,
+    // Sunday through Saturday. "Last 2 weeks" is the trailing fortnight
+    // including today — Gmail's newer_than does that natively.
+    const thisWeekStart = new Date(t); thisWeekStart.setDate(t.getDate() - t.getDay());
+    const lastWeekStart = new Date(thisWeekStart); lastWeekStart.setDate(thisWeekStart.getDate() - 7);
     return [
-      { label: 'Today',      q: 'in:inbox after:' + ymd(t) + ' before:' + ymd(tomorrow) },
-      { label: 'Yesterday',  q: 'in:inbox after:' + ymd(yesterday) + ' before:' + ymd(t) },
-      { label: 'Last month', q: 'in:inbox after:' + ymd(lastMonth) + ' before:' + ymd(thisMonth) },
-      { label: 'Unread',     q: 'in:inbox is:unread' }
+      { label: 'Today',        q: 'in:inbox after:' + ymd(t) + ' before:' + ymd(tomorrow) },
+      { label: 'Yesterday',    q: 'in:inbox after:' + ymd(yesterday) + ' before:' + ymd(t) },
+      { label: 'Last week',    q: 'in:inbox after:' + ymd(lastWeekStart) + ' before:' + ymd(thisWeekStart) },
+      { label: 'Last 2 weeks', q: 'in:inbox newer_than:14d' },
+      { label: 'Last month',   q: 'in:inbox after:' + ymd(lastMonth) + ' before:' + ymd(thisMonth) },
+      { label: 'Unread',       q: 'in:inbox is:unread' }
     ];
   }
 
@@ -686,6 +693,71 @@
     const box = document.querySelector('[data-gs-quick]');
     if (box) markQuickActive(box);
   });
+
+  /* ---------- keyboard shortcut: Alt+S -----------------------------
+     Flips the master switch without opening the popup.
+
+     Guarded on `kbdToggle`, NOT on `enabled` — gating it on `enabled`
+     would mean the key that turns the extension off is the same key
+     that stops working the moment it does.
+
+     Registered on window in the CAPTURE phase so it lands before
+     Gmail's own document-level key handling, and every propagation
+     path is cut so Gmail can't also act on the keystroke.           */
+
+  let toastTimer;
+
+  function toast(on) {
+    if (!document.body) return;
+    let el = document.getElementById('gs-kbd-toast');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'gs-kbd-toast';
+      el.setAttribute('role', 'status');
+      // Inline styles, not gmail.css: the toast has to be readable in
+      // the OFF state too, and every rule in gmail.css is gated behind
+      // html.gs-on.
+      el.style.cssText = [
+        'position:fixed', 'left:50%', 'bottom:34px', 'transform:translateX(-50%)',
+        'z-index:2147483647', 'padding:9px 15px', 'border-radius:8px',
+        'background:rgba(32,33,36,.94)', 'color:#fff',
+        'font:500 13px/1.2 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif',
+        'box-shadow:0 4px 18px rgba(0,0,0,.32)', 'pointer-events:none',
+        'opacity:0', 'transition:opacity .15s ease'
+      ].join(';');
+      document.body.appendChild(el);
+    }
+    el.textContent = on ? 'Cleanup Gmail — on' : 'Cleanup Gmail — off';
+    requestAnimationFrame(() => { el.style.opacity = '1'; });
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { el.style.opacity = '0'; }, 1200);
+  }
+
+  function toggleEnabled() {
+    const next = !settings.enabled;
+    apply({ ...settings, enabled: next });   // optimistic — no wait on storage
+    toast(next);
+    // Re-read before writing so this can't clobber a popup edit that
+    // landed since the last apply(); only `enabled` is ours to change.
+    chrome.storage.sync.get('settings', res => {
+      if (chrome.runtime.lastError) return;
+      const s = { ...(res && res.settings ? res.settings : {}), enabled: next };
+      chrome.storage.sync.set({ settings: s }, () => void chrome.runtime.lastError);
+    });
+  }
+
+  window.addEventListener('keydown', e => {
+    if (settings.kbdToggle === false) return;
+    if (!e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+    if (e.repeat) return;
+    // e.code is layout-independent; some layouts emit 'ß' for Alt+S,
+    // so key is only the fallback.
+    if (e.code !== 'KeyS' && String(e.key).toLowerCase() !== 's') return;
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+    toggleEnabled();
+  }, true);
 
   /* ---------- draggable compose windows ----------------------------
      Gmail pins compose windows in a fixed dock at the bottom right;

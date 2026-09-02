@@ -14,7 +14,7 @@
 
 ---
 
-Hide the clutter, float each message as a card, put the reply bar at the top, reverse threads so the newest message leads, and set your own accent color, fonts, density, and spacing. **33 toggles, 51 settings**, all live-updating with no page reload.
+Hide the clutter, float each message as a card, put the reply bar at the top, reverse threads so the newest message leads, and set your own accent color, fonts, density, and spacing. **38 toggles, 60 settings**, all live-updating with no page reload — and `Alt + S` to switch the whole thing on or off without leaving Gmail.
 
 Works in Chrome, Edge, Brave, Arc, Opera, Vivaldi — anything Chromium.
 
@@ -214,6 +214,14 @@ Not affiliated with, endorsed by, or connected to Google. Gmail is a trademark o
 ---
 
 ## Changelog
+
+### v1.4.0
+- **Alt + S toggles the extension** — flips the master switch from inside Gmail, no popup, no page reload, with a brief on/off confirmation at the bottom of the page. The state is written to `chrome.storage.sync`, so the popup and every other Gmail tab follow.
+- The shortcut is bound in the capture phase and stops propagation, so Gmail never sees the keystroke. It is deliberately gated on its own setting rather than on the master switch — otherwise the key that turns the extension off would be dead the moment it did.
+- New **Keyboard** section in the popup turns the shortcut off if Alt+S collides with something else you use.
+
+### v1.3.9
+- Quick filters gain **Last week** (the previous calendar week, Sunday–Saturday, mirroring how Last month works) and **Last 2 weeks** (the trailing fortnight including today, via Gmail's native `newer_than:14d`).
 
 ### v1.3.8
 - **Resizable compose windows** — drag the striped grip at the window's bottom-right corner. The grip is injected above the dialog because the native CSS resize handle is fully occluded by Gmail's compose surface and never receives the click. A resize observer keeps the body height in step with the window, since Gmail pins it at a fixed pixel height. Minimum size 480×480, below which the footer escapes containment.

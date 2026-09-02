@@ -75,6 +75,7 @@ const GS_CARD_STYLES = [
 const GS_DEFAULTS = (() => {
   const d = {
     enabled: true,
+    kbdToggle: true,     // Alt+S turns the extension on/off from inside Gmail
     accent: '#111111',
     font: GS_FONTS[0].value,
     fontSize: 14,        // px

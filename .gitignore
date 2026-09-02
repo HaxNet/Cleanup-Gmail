@@ -1,0 +1,23 @@
+# OS cruft
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*~
+
+# Build / packaging output
+*.zip
+*.crx
+*.pem
+dist/
+node_modules/
+
+# Exported settings backups (may contain personal custom CSS)
+cleanup-gmail-settings*.json
+
+# Session memory for Claude — workflow notes, not part of the extension
+CLAUDE.md
