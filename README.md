@@ -215,6 +215,14 @@ Not affiliated with, endorsed by, or connected to Google. Gmail is a trademark o
 
 ## Changelog
 
+### v1.4.2
+- **Fixed: newest message showing at the bottom instead of the top.** "Newest first" (`gs-newest-first`) assumed Gmail always authors a thread's DOM oldest-to-newest and always flipped it with `flex-direction: column-reverse`. That assumption is wrong on a thread that's actively open when a new message arrives: Gmail PREPENDS it to the DOM instead of appending, so the thread is already newest-first natively — reversing it then puts the newest message back at the bottom. Verified live on Simon's "Available for a meet?" thread (a reply had arrived while the thread sat open).
+- `tagMessageList()` now reads each message's own timestamp (`span[title]`, same pattern used for date headers) to detect which way the DOM is actually ordered, and tags the container `data-gs-msg-order="reverse"` or `"native"` accordingly. gmail.css only applies `column-reverse` for `"reverse"`; `"native"` gets plain `column` so already-correct threads are left alone. The `.kQ.adv` count badge and other non-message children have no timestamp and don't vote on direction.
+
+### v1.4.1
+- **Fixed: long threads silently hid up to 10+ messages.** Gmail's native "N more messages" collapsed-group indicator (`div.kQ.adv`, e.g. a small "7" badge on a divider line between two visible messages) was being centered and width-capped by the same `.kv, .kQ` rule used for real collapsed message rows. That badge has no text content of its own and relies on the parent flex container's cross-axis *stretch* for its size; adding `margin-left/right: auto` cancels stretch, so it collapsed to `width: 0` and rendered completely invisible. A 12-message thread displayed as if it only had 3 messages, with no visual sign the rest existed. Both `.kv, .kQ` rules in the card-pane block now exclude `.kQ.adv` (`.kQ:not(.adv)`), leaving Gmail's native badge untouched and visible.
+- Verified live on Simon's inbox: a 10-message thread ("Re: Miles Due EOD tomorrow") that rendered as 3 cards with a blank gap now shows the "7 more messages" badge on the divider, matching native Gmail with the extension off.
+
 ### v1.4.0
 - **Alt + S toggles the extension** — flips the master switch from inside Gmail, no popup, no page reload, with a brief on/off confirmation at the bottom of the page. The state is written to `chrome.storage.sync`, so the popup and every other Gmail tab follow.
 - The shortcut is bound in the capture phase and stops propagation, so Gmail never sees the keystroke. It is deliberately gated on its own setting rather than on the master switch — otherwise the key that turns the extension off would be dead the moment it did.

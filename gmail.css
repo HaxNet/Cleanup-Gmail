@@ -426,9 +426,21 @@ html.gs-card-pane .adn.ads {
    against a card at L515 w900, i.e. 30px prouder on each side.
    Match the card's width and centring, but deliberately no background,
    border or shadow: the expanded message stays the only thing wearing
-   a card, which is what makes it obvious at a glance. */
+   a card, which is what makes it obvious at a glance.
+
+   :not(.adv) is load-bearing. `.kQ.adv` is a DIFFERENT native element —
+   Gmail's "N more messages" collapsed-group indicator for long threads
+   (verified live: class "kQ bg adv", holds only a bare number like "7").
+   It has no text content to size itself by and relies on the parent's
+   flex cross-axis STRETCH for its width. margin-left/right:auto on a
+   flex item cancels stretch alignment on that axis, so the badge fell
+   back to its own content width — zero, since its child is an
+   absolutely-positioned circle, not flowed text. Result: width:0,
+   rendered invisible, and a long thread silently looked like it had far
+   fewer messages than it does. Leaving `.adv` unstyled restores the
+   native full-width stretch it depends on. */
 html.gs-card-pane .kv,
-html.gs-card-pane .kQ {
+html.gs-card-pane .kQ:not(.adv) {
   max-width: var(--gs-pane) !important;
   margin-left: auto !important;
   margin-right: auto !important;
@@ -724,8 +736,11 @@ html.gs-card-pane [data-gs="reply-block"] .aDh {
   border-radius: var(--gs-card-radius) !important;
 }
 
-/* collapsed messages in a long thread — same card, tighter */
-html.gs-card-pane .kv, html.gs-card-pane .kQ {
+/* collapsed messages in a long thread — same card, tighter.
+   Excludes .kQ.adv for the same reason as above: it's the "N more
+   messages" count badge, not a message row, and forcing padding on it
+   fights the fixed height Gmail gives that element natively. */
+html.gs-card-pane .kv, html.gs-card-pane .kQ:not(.adv) {
   padding-top: 10px !important;
   padding-bottom: 10px !important;
 }
@@ -762,20 +777,35 @@ html.gs-card-pane.gs-dark.gs-card-raised [data-gs="reply-block"] {
 
 /* ---- Newest message first ---------------------------------------
    The container holds every message node in the thread (.kv / .kQ
-   collapsed, .h7 expanded) as direct children, oldest to newest.
+   collapsed, .h7 expanded) as direct children — USUALLY oldest to
+   newest, but not always (see data-gs-msg-order below).
 
    [data-gs-msglist] is resolved at runtime by content.js — the lowest
    common ancestor of the message nodes. An earlier version hardcoded
    div.bh, a class seen on one thread, which silently did nothing on
-   threads shaped differently. div.bh stays only as a fallback.
+   threads shaped differently. div.bh stays only as a fallback, and
+   with no order info available it keeps the old oldest-first
+   assumption.
 
    content.js refuses to tag a scroll container or one holding the
-   reply bar, so flexing here can't collapse thread scrolling.       */
+   reply bar, so flexing here can't collapse thread scrolling.
 
-html.gs-newest-first [data-gs-msglist="1"],
+   data-gs-msg-order is set by content.js from the messages' own
+   timestamps: Gmail appends on a fresh load (oldest-first, "reverse"
+   flips it) but PREPENDS a message that arrives while the thread is
+   already open, so an actively-open thread can be newest-first in the
+   DOM already ("native" — reversing that would flip it right back to
+   oldest-on-top, which is the bug this replaced). */
+
+html.gs-newest-first [data-gs-msglist="1"][data-gs-msg-order="reverse"],
+html.gs-newest-first [data-gs-msglist="1"]:not([data-gs-msg-order]),
 html.gs-newest-first div.bh {
   display: flex !important;
   flex-direction: column-reverse !important;
+}
+html.gs-newest-first [data-gs-msglist="1"][data-gs-msg-order="native"] {
+  display: flex !important;
+  flex-direction: column !important;
 }
 
 /* ---- plain centering (works with or without cards) --------------- */

@@ -193,6 +193,16 @@
      can flip the order. Attribute writes don't retrigger the observer
      (it watches childList only), so this is free to run every scan. */
 
+  // Same pattern as rowDate() below, but for a message card/row rather
+  // than an inbox row: read the real timestamp off its span[title].
+  function messageTime(el) {
+    const t = el.querySelector && el.querySelector('span[title]');
+    const v = t && t.getAttribute('title');
+    if (!v) return null;
+    const d = new Date(v);
+    return isNaN(d.getTime()) ? null : d.getTime();
+  }
+
   function tagMessageList() {
     const msgs = Array.from(document.querySelectorAll('.kv, .kQ, .h7, .adn.ads'))
       .filter(el => el.getClientRects().length);
@@ -217,6 +227,24 @@
     const bar = Array.from(document.querySelectorAll('.amn'))
       .find(e => e.getBoundingClientRect().height > 10);
     if (bar && box.contains(bar)) return;
+
+    // Which way is the DOM already ordered? Assumed to always be
+    // oldest-first — wrong. Verified live: a message that arrives while
+    // the thread is sitting open gets PREPENDED to the DOM, not
+    // appended, so an actively-open thread can already be newest-first
+    // natively. Blindly reversing with column-reverse then flips it
+    // BACK to oldest-on-top — the message showing up at the bottom
+    // instead of the top.
+    //
+    // Read direction from the messages' own timestamps instead of
+    // assuming it. The count badge (.kQ.adv) and similar structural
+    // children carry no timestamp of their own, so they're skipped —
+    // only real messages vote on direction.
+    const times = Array.from(box.children).map(messageTime).filter(t => t !== null);
+    if (times.length >= 2) {
+      const order = times[0] <= times[times.length - 1] ? 'reverse' : 'native';
+      if (box.dataset.gsMsgOrder !== order) box.dataset.gsMsgOrder = order;
+    }
 
     if (box.dataset.gsMsglist !== '1') box.dataset.gsMsglist = '1';
   }
