@@ -516,7 +516,7 @@ html.gs-card-pane div.gA.gt .aoI {
 /* Movable compose windows: the drag itself is JS (content.js — CSS
    cannot reposition Gmail's fixed dock). This only signals the handle. */
 html.gs-drag-compose .nH.Hy.aXJ,
-html.gs-drag-compose .nH.Hd.aXJ {
+html.gs-drag-compose .nH.Hd:is(.aXJ, .oO6Gqe) {
   cursor: move !important;
 }
 
@@ -531,9 +531,17 @@ html.gs-drag-compose .nH.Hd.aXJ {
 
    The size floor is scoped to EXPANDED windows only: applied to .AD
    unconditionally it inflated the minimised strip into a 480px box. */
-html.gs-resize-compose div.AD:has(div.nH.Hd:not(.aXJ)) {
+html.gs-resize-compose div.AD:has(div.nH.Hd:not(.aXJ):not(.oO6Gqe)) {
   min-width: 480px !important;
   min-height: 480px !important;
+}
+/* v1.4.3: Gmail renamed the minimised dialog class .aXJ -> .oO6Gqe
+   (.aXJ now only marks the title bar .nH.Hy). Every "minimised" rule
+   matches both. A grip-resized window carries an inline height on .AD,
+   which kept the minimised strip inside a 538px invisible box — drop
+   it while minimised; the inline value returns on restore. */
+html.gs-resize-compose div.AD:has(div.nH.Hd:is(.aXJ, .oO6Gqe)) {
+  height: auto !important;
 }
 html.gs-resize-compose div.nH.Hd {
   position: relative !important;   /* anchors the grip to the dialog corner */
@@ -552,8 +560,18 @@ html.gs-resize-compose .gs-resize-grip {
       rgba(128, 128, 128, .55) 72% 79%, transparent 79%);
   border-bottom-right-radius: var(--gs-compose-radius, 16px);
 }
+/* v1.4.3: Gmail now hardcodes the title text (div.aYF) at an inline
+   width:484px, which pins the title-bar table at 600px. A window
+   resized narrower clipped the pop-out and close buttons off the
+   right edge. Let the title shrink and ellipsize instead. */
+html.gs-resize-compose div.nH.Hd .aYF {
+  width: auto !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
 /* the grip has no business on a minimised strip */
-html.gs-resize-compose div.nH.Hd.aXJ .gs-resize-grip {
+html.gs-resize-compose div.nH.Hd:is(.aXJ, .oO6Gqe) .gs-resize-grip {
   display: none;
 }
 
@@ -567,7 +585,7 @@ html.gs-card-compose .gs-compose-edge {
   border: var(--gs-compose-border-w, 1px) solid var(--gs-compose-border-c, #b4b8bf);
   border-radius: var(--gs-compose-radius, 16px);
 }
-html.gs-card-compose div.nH.Hd.aXJ .gs-compose-edge {
+html.gs-card-compose div.nH.Hd:is(.aXJ, .oO6Gqe) .gs-compose-edge {
   border-radius: var(--gs-radius, 12px) var(--gs-radius, 12px) 0 0;
 }
 html:not(.gs-card-compose) .gs-compose-edge { display: none; }
@@ -601,7 +619,7 @@ html.gs-card-compose div.AD {
 html.gs-card-compose div.nH.Hd {
   border-radius: var(--gs-compose-radius, 16px) var(--gs-compose-radius, 16px) 0 0 !important;
 }
-html.gs-card-compose div.nH.Hd.aXJ {
+html.gs-card-compose div.nH.Hd:is(.aXJ, .oO6Gqe) {
   border-radius: var(--gs-radius, 12px) var(--gs-radius, 12px) 0 0 !important;
 }
 
@@ -612,9 +630,27 @@ html.gs-card-compose div.nH.Hd.aXJ {
    space, which is why the toolbar sat too low inside it. Static
    positioning drops the footer to the holder's top: verified live,
    offset 0px, no spill past the holder bottom. */
-html.gs-card-pane div.nH.Hd .aDg .aDj {
+/* v1.4.3: Gmail now pins .aDj with bottom:16px instead of a top, and
+   sizes .aoI to EXCLUDE the footer — so flowing it statically pushed
+   it 39px past the scroll box and the Send bar was clipped. Pin it to
+   the dialog's bottom instead (the dialog is position:relative from the
+   resize rule; .aDg goes static so it isn't the containing block).
+   .aDg keeps its inline 116px height, reserving the footer's space at
+   the end of the scroll content so text scrolls clear above it.
+   right:15px leaves .aoI's stable scrollbar gutter uncovered. */
+html.gs-card-pane div.nH.Hd {
+  position: relative !important;     /* containing block for the footer */
+}
+html.gs-card-pane div.nH.Hd .aDg {
   position: static !important;
+}
+html.gs-card-pane div.nH.Hd .aDg .aDj {
+  position: absolute !important;
   top: auto !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 15px !important;
+  width: auto !important;
   height: auto !important;
 }
 

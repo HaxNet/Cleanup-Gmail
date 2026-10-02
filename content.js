@@ -865,12 +865,24 @@
       resizeObs = new ResizeObserver(entries => {
         if (!settings.enabled || !settings['resize-compose']) return;
         entries.forEach(en => {
-          const AD = en.target;
-          const dlg = AD.querySelector('div.nH.Hd');
+          /* Targets are .AD (grip resizes) AND the dialog (Gmail
+             rewrites .aoI's height on minimise -> restore; a sized .AD
+             doesn't change size then, so only the dialog notices). */
+          const AD = en.target.closest('div.AD');
+          const dlg = AD && AD.querySelector('div.nH.Hd');
           const aoI = dlg && dlg.querySelector('.aoI');
-          if (!aoI) return;
-          const chrome = dlg.getBoundingClientRect().height -
-                         aoI.getBoundingClientRect().height;
+          if (!aoI || dlg.matches('.aXJ, .oO6Gqe')) return;   // minimised
+          /* Only a window the grip has sized (inline height on .AD) is
+             synced. Unsized, .AD is height:auto — its height IS its
+             content, so "AD height - chrome" fed back into itself and
+             grew without bound (Gmail now adds a 16px spacer under the
+             dialog: +16px per pass, measured at 34,000px+). Chrome is
+             every pixel of .AD's content that isn't .aoI, spacer
+             included, so the target converges. */
+          if (!AD.style.height) return;
+          let content = 0;
+          for (const c of AD.children) content += c.getBoundingClientRect().height;
+          const chrome = content - aoI.getBoundingClientRect().height;
           const target = Math.max(240,
             Math.round(AD.getBoundingClientRect().height - chrome));
           if (Math.abs((parseFloat(aoI.style.height) || 0) - target) > 2) {
@@ -884,6 +896,7 @@
       if (!AD.querySelector('div.nH.Hd')) return;
       AD.dataset.gsResize = '1';
       resizeObs.observe(AD);
+      resizeObs.observe(AD.querySelector('div.nH.Hd'));
 
       /* The grip lives on the DIALOG, not on .AD — found empirically.
          Native CSS resize was occluded, and a grip parented to .AD
@@ -958,7 +971,7 @@
     return null;
   }
 
-  const DRAG_HANDLE = '.nH.Hy.aXJ, .nH.Hd.aXJ';
+  const DRAG_HANDLE = '.nH.Hy.aXJ, .nH.Hd.aXJ, .nH.Hd.oO6Gqe';
 
   function setupComposeDrag() {
     document.addEventListener('mousedown', e => {
